@@ -11,9 +11,9 @@ import sys
 import os
 
 # Cloudflare 配置
-CF_ACCOUNT_ID = os.getenv('CF_ACCOUNT_ID', 'your-account-id')
-CF_API_TOKEN = os.getenv('CF_API_TOKEN', 'your-api-token')
-KV_NAMESPACE_ID = os.getenv('KV_NAMESPACE_ID', 'your-kv-namespace-id')
+CF_ACCOUNT_ID = os.getenv('CF_ACCOUNT_ID', '3699f761c63b862c0dbd199802b79235')
+CF_API_TOKEN = os.getenv('CF_API_TOKEN', '6rwyhFXUVgpxaSoIy-JEDg2lOetXagtN_TR2tYxq')
+KV_NAMESPACE_ID = os.getenv('KV_NAMESPACE_ID', '7c09b08799404be7be35df6a514bdcad')
 
 # 数据文件路径
 DATA_DIR = '/root/.openclaw/workspace/learning'

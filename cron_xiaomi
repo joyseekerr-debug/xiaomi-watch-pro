@@ -1,0 +1,4 @@
+# XiaomiWatch Pro 定时同步任务
+# 每5分钟同步一次数据到 Cloudflare KV
+
+*/5 * * * * cd /root/.openclaw/workspace/learning/xiaomi-dashboard && /usr/bin/python3 sync_to_kv.py >> /var/log/xiaomi-sync.log 2>&1
