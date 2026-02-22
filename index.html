@@ -3,83 +3,621 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小米股票监控</title>
+    <title>小米股票智能监控 - XiaomiWatch Pro</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #1a1a2e; color: #fff; font-family: sans-serif; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; }
-        .price { font-size: 48px; color: #00d4ff; font-weight: bold; }
-        .green { color: #00ff88; }
-        .red { color: #ff4757; }
-        .gray { color: rgba(255,255,255,0.5); }
-        .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 1200px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+        }
+        
+        .price-large {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+        }
+        
+        .text-success { color: #00ff88; }
+        .text-danger { color: #ff4757; }
+        .text-warning { color: #ffd700; }
+        .text-accent { color: #00d4ff; }
+        .text-gray { color: rgba(255,255,255,0.5); }
+        
+        .section-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .row:last-child { border-bottom: none; }
+        
+        .update-time {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 12px;
+            text-align: right;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            transition: opacity 0.2s;
+        }
+        
+        .btn:hover { opacity: 0.8; }
+        
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-size: 24px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            margin-top: 40px;
+        }
+        
+        .news-item {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 13px;
+        }
+        
+        .news-item:last-child { border-bottom: none; }
+        
+        .news-link {
+            color: #00d4ff;
+            text-decoration: none;
+        }
+        
+        .news-link:hover { text-decoration: underline; }
+        
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+        
+        .tag-positive { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .tag-negative { background: rgba(255,71,87,0.2); color: #ff4757; }
+        .tag-neutral { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+        
+        .detail-panel {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+        
+        .fade-enter-from, .fade-leave-to {
+            opacity: 0;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <h1>📊 小米股票智能监控</h1>
-            <div class="gray">XiaomiWatch Pro v3.1.0</div>
+    <div id="app">
+        <div v-if="loading" class="loading">
+            ⏳ 加载中...
         </div>
-        <div class="gray" id="date"></div>
-    </div>
+        
+        <div v-else>
+            <header class="header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 28px;">📊</span>
+                    <div>
+                        <h1 style="font-size: 20px; margin-bottom: 4px;">小米股票智能监控</h1>
+                        <div style="font-size: 12px; color: #00d4ff;">XiaomiWatch Pro v3.2.0</div>
+                    </div>
+                </div>
+                <div class="text-gray">
+                    {{ currentDate }}
+                    <button class="btn btn-small" @click="refreshData" style="margin-left: 10px;">
+                        🔄 刷新
+                    </button>
+                </div>
+            </header>
 
-    <div class="grid">
-        <div class="card">
-            <div class="gray">小米集团-W (1810.HK)</div>
-            <div class="price">35.36</div>
-            <div class="red">-1.30 (-3.55%)</div>
-            <div class="gray" style="margin-top: 10px; font-size: 12px;">最高: 36.86 / 最低: 35.32</div>
+            <div class="dashboard-grid">
+                <!-- 左侧 -->
+                <div>
+                    <!-- 股价 -->
+                    <div class="card">
+                        <div class="section-title">小米集团-W (1810.HK)</div>
+                        <div class="price-large">{{ currentPrice.price?.toFixed(2) }}</div>
+                        <div :class="currentPrice.change >= 0 ? 'text-success' : 'text-danger'" style="font-size: 18px;">
+                            {{ currentPrice.change >= 0 ? '+' : '' }}{{ currentPrice.change?.toFixed(2) }}
+                            ({{ currentPrice.change >= 0 ? '+' : '' }}{{ currentPrice.changePercent?.toFixed(2) }}%)
+                        </div>
+                        <div class="text-gray" style="margin-top: 10px; font-size: 13px;">
+                            最高: {{ currentPrice.high?.toFixed(2) }} / 最低: {{ currentPrice.low?.toFixed(2) }}
+                        </div>
+                        <div class="update-time">更新于: {{ updateTime }}</div>
+                    </div>
+
+                    <!-- 持仓 -->
+                    <div class="card">
+                        <div class="section-title">持仓状态</div>
+                        <div class="row">
+                            <span>持仓股数</span>
+                            <span>{{ position.shares }}股</span>
+                        </div>
+                        <div class="row">
+                            <span>平均成本</span>
+                            <span>{{ position.avgCost?.toFixed(2) }} HKD</span>
+                        </div>
+                        <div class="row">
+                            <span>持仓市值</span>
+                            <span>{{ position.marketValue?.toFixed(0) }} HKD</span>
+                        </div>
+                        <div class="row">
+                            <span>持仓盈亏</span>
+                            <span :class="position.profit >= 0 ? 'text-success' : 'text-danger'">
+                                {{ position.profit >= 0 ? '+' : '' }}{{ position.profit?.toFixed(0) }}元
+                            </span>
+                        </div>
+                        <div class="row">
+                            <span>盈亏比例</span>
+                            <span :class="position.profitPercent >= 0 ? 'text-success' : 'text-danger'">
+                                {{ position.profitPercent >= 0 ? '+' : '' }}{{ position.profitPercent?.toFixed(2) }}%
+                            </span>
+                        </div>
+                        <div class="update-time">更新于: {{ updateTime }}</div>
+                    </div>
+
+                    <!-- 关键价位 -->
+                    <div class="card">
+                        <div class="section-title">关键价位</div>
+                        <div class="row">
+                            <span class="text-success">买入位</span>
+                            <span>{{ keyLevels.buy }} HKD</span>
+                        </div>
+                        <div class="row">
+                            <span class="text-danger">卖出位</span>
+                            <span>{{ keyLevels.sell }} HKD</span>
+                        </div>
+                        <div class="row">
+                            <span class="text-danger">止损位</span>
+                            <span>{{ keyLevels.stopLoss }} HKD</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 中间 -->
+                <div>
+                    <!-- 今日建议 -->
+                    <div class="card" style="text-align: center; padding: 40px;">
+                        <div class="section-title">今日建议</div>
+                        <div :class="adviceColorClass" style="font-size: 42px; font-weight: bold; margin: 20px 0;">
+                            {{ todayAdvice.action }}
+                        </div>
+                        <div class="text-gray" style="font-size: 14px;">{{ todayAdvice.reason }}</div>
+                        <div v-if="todayAdvice.detailReason" class="text-gray" style="font-size: 12px; margin-top: 8px;">
+                            {{ todayAdvice.detailReason }}
+                        </div>
+                    </div>
+
+                    <!-- 多因子评分 -->
+                    <div class="card">
+                        <div class="section-title">
+                            <span>多因子评分</span>
+                            <button class="btn btn-small" @click="showFactorDetail = !showFactorDetail">
+                                {{ showFactorDetail ? '收起' : '详情' }}
+                            </button>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 56px; font-weight: bold; background: linear-gradient(135deg, #00d4ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                                {{ factorScores.overall }}
+                            </div>
+                            <div class="text-gray">/100</div>
+                        </div>
+                        
+                        <transition name="fade">
+                            <div v-if="showFactorDetail" class="detail-panel">
+                                <div class="row">
+                                    <span>价格位置 (30%)</span>
+                                    <span :class="getScoreClass(factorScores.price)">{{ factorScores.price }}</span>
+                                </div>
+                                <div class="row">
+                                    <span>新闻情绪 (20%)</span>
+                                    <span :class="getScoreClass(factorScores.news)">{{ factorScores.news }}</span>
+                                </div>
+                                <div class="row">
+                                    <span>资金流向 (20%)</span>
+                                    <span :class="getScoreClass(factorScores.fundFlow)">{{ factorScores.fundFlow }}</span>
+                                </div>
+                                <div class="row">
+                                    <span>舆情监控 (10%)</span>
+                                    <span :class="getScoreClass(factorScores.sentiment)">{{ factorScores.sentiment }}</span>
+                                </div>
+                                <div class="row">
+                                    <span>技术形态 (15%)</span>
+                                    <span :class="getScoreClass(factorScores.technical)">{{ factorScores.technical }}</span>
+                                </div>
+                                <div class="row">
+                                    <span>大盘环境 (5%)</span>
+                                    <span :class="getScoreClass(factorScores.market)">{{ factorScores.market }}</span>
+                                </div>
+                                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: rgba(255,255,255,0.5);">
+                                    计算公式: 价格×0.3 + 新闻×0.2 + 资金×0.2 + 舆情×0.1 + 技术×0.15 + 大盘×0.05
+                                </div>
+                            </div>
+                        </transition>
+                        <div class="update-time">更新于: {{ updateTime }}</div>
+                    </div>
+
+                    <!-- 资金流向 -->
+                    <div class="card">
+                        <div class="section-title">
+                            <span>资金流向</span>
+                            <div>
+                                <button v-for="tab in fundFlowTabs" :key="tab.value"
+                                        class="btn btn-small" 
+                                        :style="{ opacity: currentFundTab === tab.value ? 1 : 0.5 }"
+                                        @click="currentFundTab = tab.value"
+                                        style="margin-left: 5px;">
+                                    {{ tab.label }}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <span>主力净流入</span>
+                            <span :class="currentFundFlow.mainInflow >= 0 ? 'text-success' : 'text-danger'">
+                                {{ currentFundFlow.mainInflow >= 0 ? '+' : '' }}{{ currentFundFlow.mainInflow?.toFixed(2) }}亿
+                            </span>
+                        </div>
+                        <div class="row">
+                            <span>散户净流入</span>
+                            <span :class="currentFundFlow.retailInflow >= 0 ? 'text-success' : 'text-danger'">
+                                {{ currentFundFlow.retailInflow >= 0 ? '+' : '' }}{{ currentFundFlow.retailInflow?.toFixed(2) }}亿
+                            </span>
+                        </div>
+                        <div class="row">
+                            <span>北向资金</span>
+                            <span :class="currentFundFlow.northbound >= 0 ? 'text-success' : 'text-danger'">
+                                {{ currentFundFlow.northbound >= 0 ? '+' : '' }}{{ currentFundFlow.northbound?.toFixed(2) }}亿
+                            </span>
+                        </div>
+                        <div class="update-time">更新于: {{ updateTime }}</div>
+                    </div>
+                </div>
+
+                <!-- 右侧 -->
+                <div>
+                    <!-- 系统状态 -->
+                    <div class="card">
+                        <div class="section-title">系统状态</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 8px; height: 8px; background: #00ff88; border-radius: 50%; display: inline-block;"></span>
+                            <span>{{ systemStatus.status }}</span>
+                        </div>
+                        <div class="text-gray" style="font-size: 12px; margin-top: 8px;">
+                            下次更新: {{ systemStatus.nextUpdate }}
+                        </div>
+                    </div>
+
+                    <!-- 舆情监控 -->
+                    <div class="card">
+                        <div class="section-title">
+                            <span>舆情监控</span>
+                            <button class="btn btn-small" @click="showSentimentDetail = !showSentimentDetail">
+                                {{ showSentimentDetail ? '收起' : '详情' }}
+                            </button>
+                        </div>
+                        <div style="text-align: center;">
+                            <div :class="sentimentColorClass" style="font-size: 42px; font-weight: bold;">
+                                {{ sentiment.score }}
+                            </div>
+                            <div :class="sentimentColorClass">{{ sentiment.level }}</div>
+                        </div>
+                        
+                        <transition name="fade">
+                            <div v-if="showSentimentDetail" class="detail-panel">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                    <div style="text-align: center;">
+                                        <div class="text-success">{{ sentiment.stats?.positive }}</div>
+                                        <div class="text-gray" style="font-size: 10px;">正面</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="text-gray">{{ sentiment.stats?.neutral }}</div>
+                                        <div class="text-gray" style="font-size: 10px;">中性</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="text-danger">{{ sentiment.stats?.negative }}</div>
+                                        <div class="text-gray" style="font-size: 10px;">负面</div>
+                                    </div>
+                                </div>
+                                <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px;">
+                                    <strong>评分原因:</strong> {{ sentiment.reason }}
+                                </div>
+                            </div>
+                        </transition>
+                        <div class="update-time">更新于: {{ updateTime }}</div>
+                    </div>
+
+                    <!-- 最新新闻 -->
+                    <div class="card">
+                        <div class="section-title">最新新闻</div>
+                        <div v-for="(item, index) in news" :key="index" class="news-item">
+                            <a :href="item.url" target="_blank" class="news-link">{{ item.title }}</a>
+                            <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+                                <span class="text-gray" style="font-size: 11px;">{{ item.source }} · {{ item.time }}</span>
+                                <span class="tag" :class="'tag-' + item.sentiment">{{ item.sentimentText }}</span>
+                            </div>
+                        </div>
+                        <div class="update-time">更新于: {{ updateTime }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <div>XiaomiWatch Pro v3.2.0 | 数据更新时间: {{ updateTime }}</div>
+                <div style="margin-top: 8px; color: rgba(255,255,255,0.3);">
+                    数据来源: {{ dataSource }}
+                </div>
+            </footer>
         </div>
-
-        <div class="card">
-            <div class="gray">持仓状态</div>
-            <div class="row"><span>持仓股数</span><span>1600股</span></div>
-            <div class="row"><span>平均成本</span><span>35.90 HKD</span></div>
-            <div class="row"><span>持仓盈亏</span><span class="red">-864元</span></div>
-            <div class="row"><span>盈亏比例</span><span class="red">-1.51%</span></div>
-        </div>
-
-        <div class="card">
-            <div class="gray">关键价位</div>
-            <div class="row"><span class="green">买入位</span><span>34.0 HKD</span></div>
-            <div class="row"><span class="red">卖出位</span><span>42.0 HKD</span></div>
-            <div class="row"><span class="red">止损位</span><span>28.0 HKD</span></div>
-        </div>
-
-        <div class="card" style="text-align: center;">
-            <div class="gray">今日建议</div>
-            <div style="font-size: 36px; color: #ffd700; margin: 20px 0;">等待</div>
-            <div class="gray">距离买入位34.0还差3.9%</div>
-        </div>
-
-        <div class="card" style="text-align: center;">
-            <div class="gray">多因子评分</div>
-            <div style="font-size: 48px; color: #00d4ff; margin: 10px 0;">72.8</div>
-            <div class="gray">/100</div>
-        </div>
-
-        <div class="card" style="text-align: center;">
-            <div class="gray">舆情监控</div>
-            <div style="font-size: 36px; color: #ff4757; margin: 10px 0;">35</div>
-            <div class="red">负面</div>
-        </div>
-    </div>
-
-    <div style="text-align: center; margin-top: 40px; color: rgba(255,255,255,0.3); font-size: 12px;">
-        XiaomiWatch Pro v3.1.0 | 数据更新时间: <span id="time"></span>
     </div>
 
     <script>
-        // 显示当前日期
-        document.getElementById('date').textContent = new Date().toLocaleDateString('zh-CN', {
-            year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
-        });
+        const { createApp, ref, computed, onMounted } = Vue;
         
-        // 显示当前时间
-        document.getElementById('time').textContent = new Date().toLocaleTimeString('zh-CN');
+        createApp({
+            setup() {
+                const loading = ref(true);
+                const showFactorDetail = ref(false);
+                const showSentimentDetail = ref(false);
+                const currentFundTab = ref('today');
+                const dataSource = ref('默认数据');
+                const updateTime = ref('');
+                
+                const API_BASE = 'https://xiaomi-watch-pro-api.joyseekerr.workers.dev';
+                
+                // 默认数据
+                const currentPrice = ref({
+                    price: 35.36,
+                    change: -1.30,
+                    changePercent: -3.55,
+                    high: 36.86,
+                    low: 35.32,
+                    open: 36.66,
+                    prevClose: 36.66,
+                    volume: '9326.99万',
+                    turnover: '33.29亿'
+                });
+                
+                const position = ref({
+                    shares: 1600,
+                    avgCost: 35.90,
+                    marketValue: 56576,
+                    profit: -864,
+                    profitPercent: -1.51,
+                    isProfit: false
+                });
+                
+                const keyLevels = ref({
+                    buy: 34.0,
+                    sell: 42.0,
+                    stopLoss: 28.0
+                });
+                
+                const todayAdvice = ref({
+                    action: '等待',
+                    reason: '距离买入位34.0还差3.9%',
+                    detailReason: '当前价格35.36，建议等待回调至34.0附近再考虑建仓'
+                });
+                
+                const factorScores = ref({
+                    overall: 72.8,
+                    price: 75,
+                    news: 68,
+                    fundFlow: 45,
+                    sentiment: 58,
+                    technical: 65,
+                    market: 70
+                });
+                
+                const fundFlowTabs = ref([
+                    { value: 'today', label: '今日' },
+                    { value: '5d', label: '5日' },
+                    { value: '10d', label: '10日' },
+                    { value: '20d', label: '20日' }
+                ]);
+                
+                const fundFlowData = ref({
+                    today: { mainInflow: -2.35, retailInflow: 0.85, northbound: -1.20 },
+                    '5d': { mainInflow: -8.50, retailInflow: 3.20, northbound: -4.50 },
+                    '10d': { mainInflow: -15.20, retailInflow: 6.80, northbound: -8.30 },
+                    '20d': { mainInflow: -28.50, retailInflow: 12.50, northbound: -15.60 }
+                });
+                
+                const systemStatus = ref({
+                    status: '正常监控中',
+                    nextUpdate: '2分钟后'
+                });
+                
+                const sentiment = ref({
+                    score: 35,
+                    level: '负面',
+                    stats: { positive: 12, neutral: 28, negative: 45, total: 85 },
+                    reason: '近期高管言论偏谨慎，社交媒体负面情绪较多，机构评级下调'
+                });
+                
+                const news = ref([
+                    { title: '小米集团2月20日回购428万股，涉资1.52亿港元', url: 'https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-02-20/doc-inefukaq9026549.shtml', source: '新浪财经', time: '2天前', sentiment: 'positive', sentimentText: '正面' },
+                    { title: '小米SU7销量超预期，3月产能将提升', url: 'https://www.cls.cn/detail/1926440', source: '财联社', time: '3天前', sentiment: 'positive', sentimentText: '正面' },
+                    { title: '雷军：2025年是小米汽车关键之年', url: 'https://www.wallstreetcn.com/articles/1234567', source: '华尔街见闻', time: '5天前', sentiment: 'neutral', sentimentText: '中性' },
+                    { title: '摩根大通下调小米目标价至38港元', url: 'https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-02-18/doc-inefukaq9026548.shtml', source: '新浪财经', time: '1周前', sentiment: 'negative', sentimentText: '负面' }
+                ]);
+                
+                // 计算属性
+                const currentDate = computed(() => {
+                    return new Date().toLocaleDateString('zh-CN', { 
+                        year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' 
+                    });
+                });
+                
+                const currentFundFlow = computed(() => {
+                    return fundFlowData.value[currentFundTab.value] || { mainInflow: 0, retailInflow: 0, northbound: 0 };
+                });
+                
+                const adviceColorClass = computed(() => {
+                    const action = todayAdvice.value.action;
+                    if (action === '买入') return 'text-success';
+                    if (action === '卖出') return 'text-danger';
+                    return 'text-warning';
+                });
+                
+                const sentimentColorClass = computed(() => {
+                    const score = sentiment.value.score;
+                    if (score >= 70) return 'text-success';
+                    if (score >= 40) return 'text-warning';
+                    return 'text-danger';
+                });
+                
+                // 方法
+                const getScoreClass = (score) => {
+                    if (score >= 70) return 'text-success';
+                    if (score >= 40) return 'text-warning';
+                    return 'text-danger';
+                };
+                
+                const refreshData = async () => {
+                    loading.value = true;
+                    try {
+                        const response = await fetch(`${API_BASE}/api/dashboard`);
+                        const result = await response.json();
+                        
+                        if (!result.error) {
+                            if (result.price) currentPrice.value = result.price;
+                            if (result.position) position.value = result.position;
+                            if (result.keyLevels) keyLevels.value = result.keyLevels;
+                            if (result.advice) todayAdvice.value = result.advice;
+                            if (result.factorScores) factorScores.value = result.factorScores;
+                            if (result.fundFlow) fundFlowData.value = result.fundFlow;
+                            if (result.systemStatus) systemStatus.value = result.systemStatus;
+                            if (result.sentiment) sentiment.value = result.sentiment;
+                            if (result.news && result.news.news) news.value = result.news.news;
+                            dataSource.value = 'API实时';
+                        }
+                    } catch (e) {
+                        console.error('API 失败:', e);
+                        dataSource.value = '默认数据(离线)';
+                    }
+                    updateTime.value = new Date().toLocaleTimeString('zh-CN');
+                    loading.value = false;
+                };
+                
+                onMounted(() => {
+                    updateTime.value = new Date().toLocaleTimeString('zh-CN');
+                    loading.value = false;
+                    refreshData();
+                    setInterval(refreshData, 300000); // 5分钟自动刷新
+                });
+                
+                return {
+                    loading,
+                    showFactorDetail,
+                    showSentimentDetail,
+                    currentFundTab,
+                    dataSource,
+                    updateTime,
+                    currentPrice,
+                    position,
+                    keyLevels,
+                    todayAdvice,
+                    factorScores,
+                    fundFlowTabs,
+                    fundFlowData,
+                    systemStatus,
+                    sentiment,
+                    news,
+                    currentDate,
+                    currentFundFlow,
+                    adviceColorClass,
+                    sentimentColorClass,
+                    getScoreClass,
+                    refreshData
+                };
+            }
+        }).mount('#app');
     </script>
 </body>
 </html>
