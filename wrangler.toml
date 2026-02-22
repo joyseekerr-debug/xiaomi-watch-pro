@@ -1,3 +1,7 @@
 name = "xiaomi-watch-pro-api"
 main = "worker.js"
 compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "XIAOMI_WATCH_DATA"
+id = "7c09b08799404be7be35df6a514bdcad"
