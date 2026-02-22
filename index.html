@@ -7,7 +7,6 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-    <link rel="stylesheet" href="./src/styles/main.css">
     <script>
         tailwind.config = {
             theme: {
@@ -36,73 +35,29 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
         }
-        
-        /* 玻璃拟态卡片 */
         .glass-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
+            padding: 20px;
         }
-        
-        /* 脉冲动画 - 绿色买入信号 */
         @keyframes pulse-green {
             0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
             50% { box-shadow: 0 0 0 20px rgba(0, 255, 136, 0); }
         }
-        .pulse-green {
-            animation: pulse-green 2s infinite;
-            border: 2px solid #00ff88;
-        }
-        
-        /* 闪烁动画 - 红色止损警告 */
+        .pulse-green { animation: pulse-green 2s infinite; border: 2px solid #00ff88; }
         @keyframes flash-red {
             0%, 100% { background: rgba(255, 71, 87, 0.2); }
             50% { background: rgba(255, 71, 87, 0.5); }
         }
-        .flash-red {
-            animation: flash-red 1s infinite;
-            border: 2px solid #ff4757;
-        }
-        
-        /* 呼吸动画 - 蓝色交易中 */
-        @keyframes breathe-blue {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-        .breathe-blue {
-            animation: breathe-blue 2s ease-in-out infinite;
-        }
-        
-        /* 价格数字字体 */
-        .price-large {
-            font-size: clamp(48px, 8vw, 96px);
-            font-weight: 700;
-            letter-spacing: -2px;
-        }
-        
-        /* 渐变文字 */
+        .flash-red { animation: flash-red 1s infinite; border: 2px solid #ff4757; }
+        .price-large { font-size: clamp(48px, 8vw, 96px); font-weight: 700; letter-spacing: -2px; }
         .gradient-text {
             background: linear-gradient(135deg, #00d4ff, #00ff88);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
-        
-        /* 滚动条样式 */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(0, 212, 255, 0.3);
-            border-radius: 3px;
-        }
-        
-        /* 响应式网格 */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 320px 1fr 320px;
@@ -111,106 +66,312 @@
             max-width: 1920px;
             margin: 0 auto;
         }
-        
         @media (max-width: 1200px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-        }
-        
-        /* 移动端底部导航 */
-        .mobile-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-around;
-            z-index: 100;
-        }
-        
-        .mobile-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 12px;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-        
-        .mobile-nav-item.active {
-            color: #00d4ff;
-        }
-        
-        /* 按钮样式 */
-        .btn-primary {
-            background: linear-gradient(135deg, #00d4ff, #0099cc);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 12px;
-            color: #fff;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #00ff88, #00cc6a);
-        }
-        .btn-success:hover {
-            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #ff4757, #cc3645);
-        }
-        .btn-danger:hover {
-            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4);
-        }
-        
-        /* 展开动画 */
-        .expand-enter-active, .expand-leave-active {
-            transition: all 0.3s ease;
-        }
-        .expand-enter-from, .expand-leave-to {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        
-        /* 数据新鲜度指示器 */
-        .freshness-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .freshness-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #00ff88;
-            animation: pulse-dot 1.5s infinite;
-        }
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            .dashboard-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div id="app"></div>
-    <script type="module" src="./src/main.js"></script>
+    <div id="app">
+        <div v-if="loading" class="flex items-center justify-center min-h-screen">
+            <div class="text-center">
+                <div class="text-2xl mb-4">⏳ 加载中...</div>
+                <div class="text-gray-400">正在初始化小米股票监控系统</div>
+            </div>
+        </div>
+        <div v-else>
+            <!-- 头部 -->
+            <header class="p-4 border-b border-white/10">
+                <div class="flex items-center justify-between max-w-7xl mx-auto">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">📊</span>
+                        <h1 class="text-xl font-bold">小米股票智能监控</h1>
+                        <span class="text-xs px-2 py-1 bg-accent/20 text-accent rounded">v3.1.0</span>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        {{ marketStatus }}
+                    </div>
+                </div>
+            </header>
+
+            <!-- 主要内容 -->
+            <main class="dashboard-grid">
+                <!-- 左侧：实时数据 -->
+                <div class="space-y-4">
+                    <!-- 股价卡片 -->
+                    <div class="glass-card" :class="{ 'pulse-green': isBuySignal, 'flash-red': isStopLoss }">
+                        <div class="text-sm text-gray-400 mb-2">小米集团-W (1810.HK)</div>
+                        <div class="price-large gradient-text">{{ currentPrice.price.toFixed(2) }}</div>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span :class="priceChangeClass">{{ priceChangeSymbol }}{{ currentPrice.change.toFixed(2) }}</span>
+                            <span :class="priceChangeClass">({{ priceChangeSymbol }}{{ currentPrice.changePercent.toFixed(2) }}%)</span>
+                        </div>
+                        <div class="mt-4 text-xs text-gray-500">
+                            最高: {{ currentPrice.high.toFixed(2) }} / 最低: {{ currentPrice.low.toFixed(2) }}
+                        </div>
+                    </div>
+
+                    <!-- 持仓卡片 -->
+                    <div class="glass-card">
+                        <div class="text-sm text-gray-400 mb-3">持仓状态</div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span>持仓盈亏</span>
+                            <span :class="position.isProfit ? 'text-success' : 'text-danger'">
+                                {{ position.isProfit ? '+' : '' }}{{ position.profit.toFixed(0) }}元
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span>盈亏比例</span>
+                            <span :class="position.isProfit ? 'text-success' : 'text-danger'">
+                                {{ position.isProfit ? '+' : '' }}{{ position.profitPercent.toFixed(2) }}%
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>持仓股数</span>
+                            <span>{{ position.shares }}股</span>
+                        </div>
+                    </div>
+
+                    <!-- 关键价位 -->
+                    <div class="glass-card">
+                        <div class="text-sm text-gray-400 mb-3">关键价位</div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-success">买入位</span>
+                                <span>{{ keyLevels.buy.toFixed(1) }} HKD</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-danger">卖出位</span>
+                                <span>{{ keyLevels.sell.toFixed(1) }} HKD</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-danger">止损位</span>
+                                <span>{{ keyLevels.stopLoss.toFixed(1) }} HKD</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 中间：图表区域 -->
+                <div class="space-y-4">
+                    <!-- 今日建议 -->
+                    <div class="glass-card text-center py-8">
+                        <div class="text-sm text-gray-400 mb-4">今日建议</div>
+                        <div class="text-4xl font-bold mb-4" :class="adviceColorClass">{{ todayAdvice.action }}</div>
+                        <div class="text-gray-300">{{ todayAdvice.reason }}</div>
+                        <div class="mt-4 text-sm text-gray-500">
+                            距离买入位: {{ todayAdvice.distanceToBuy.toFixed(1) }}%
+                        </div>
+                    </div>
+
+                    <!-- 6因子评分 -->
+                    <div class="glass-card">
+                        <div class="text-sm text-gray-400 mb-4">多因子评分</div>
+                        <div class="text-center mb-4">
+                            <span class="text-5xl font-bold gradient-text">{{ factorScores.overall }}</span>
+                            <span class="text-gray-400">/100</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-center text-sm">
+                            <div>
+                                <div class="text-gray-400">技术面</div>
+                                <div class="text-accent">{{ factorScores.technical }}</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">资金面</div>
+                                <div class="text-accent">{{ factorScores.fundFlow }}</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-400">舆情</div>
+                                <div class="text-accent">{{ factorScores.sentiment }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 资金流向 -->
+                    <div class="glass-card">
+                        <div class="text-sm text-gray-400 mb-4">资金流向</div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span>主力净流入</span>
+                                <span :class="fundFlow.mainInflow >= 0 ? 'text-success' : 'text-danger'">
+                                    {{ fundFlow.mainInflow >= 0 ? '+' : '' }}{{ fundFlow.mainInflow.toFixed(2) }}亿
+                                </span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>北向资金</span>
+                                <span :class="fundFlow.northbound >= 0 ? 'text-success' : 'text-danger'">
+                                    {{ fundFlow.northbound >= 0 ? '+' : '' }}{{ fundFlow.northbound.toFixed(2) }}亿
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：系统信息 -->
+                <div class="space-y-4">
+                    <!-- 系统状态 -->
+                    <div class="glass-card">
+                        <div class="text-sm text-gray-400 mb-3">系统状态</div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                            <span>{{ systemStatus.status }}</span>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            下次更新: {{ systemStatus.nextUpdate }}
+                        </div>
+                    </div>
+
+                    <!-- 舆情 -->
+                    <div class="glass-card">
+                        <div class="text-sm text-gray-400 mb-3">舆情监控</div>
+                        <div class="text-2xl font-bold mb-2" :class="sentimentScoreClass">{{ sentiment.score }}</div>
+                        <div class="text-sm" :class="sentimentScoreClass">{{ sentiment.level }}</div>
+                    </div>
+
+                    <!-- 新闻 -->
+                    <div class="glass-card">
+                        <div class="text-sm text-gray-400 mb-3">最新新闻</div>
+                        <div class="space-y-2 max-h-40 overflow-y-auto">
+                            <div v-for="(item, index) in news.slice(0, 3)" :key="index" class="text-sm border-b border-white/10 pb-2">
+                                <div class="text-gray-300 line-clamp-2">{{ item.title }}</div>
+                                <div class="text-xs text-gray-500 mt-1">{{ item.time }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                const loading = ref(false);
+                
+                // 当前价格
+                const currentPrice = ref({
+                    price: 35.36,
+                    change: -1.30,
+                    changePercent: -3.55,
+                    high: 36.86,
+                    low: 35.32,
+                    open: 36.66,
+                    prevClose: 36.66
+                });
+
+                // 持仓
+                const position = ref({
+                    shares: 1040,
+                    avgCost: 35.90,
+                    profit: 720,
+                    profitPercent: 2.12,
+                    isProfit: true
+                });
+
+                // 关键价位
+                const keyLevels = ref({
+                    buy: 34.0,
+                    sell: 42.0,
+                    stopLoss: 28.0
+                });
+
+                // 今日建议
+                const todayAdvice = ref({
+                    action: '等待',
+                    reason: '距离买入位34.0还差3.9%',
+                    distanceToBuy: 3.9
+                });
+
+                // 因子评分
+                const factorScores = ref({
+                    overall: 72.8,
+                    technical: 65,
+                    fundFlow: 45,
+                    sentiment: 58
+                });
+
+                // 资金流向
+                const fundFlow = ref({
+                    mainInflow: -2.35,
+                    northbound: -1.20
+                });
+
+                // 系统状态
+                const systemStatus = ref({
+                    status: '正常监控中',
+                    nextUpdate: '2分钟后'
+                });
+
+                // 舆情
+                const sentiment = ref({
+                    score: 35,
+                    level: '负面'
+                });
+
+                // 新闻
+                const news = ref([
+                    { title: '小米集团2月20日回购428万股，涉资1.52亿港元', time: '2天前', sentiment: 'positive' },
+                    { title: '小米SU7销量超预期，3月产能将提升', time: '3天前', sentiment: 'positive' },
+                    { title: '雷军：2025年是小米汽车关键之年', time: '5天前', sentiment: 'neutral' }
+                ]);
+
+                // 计算属性
+                const isBuySignal = computed(() => currentPrice.value.price <= keyLevels.value.buy);
+                const isStopLoss = computed(() => currentPrice.value.price <= keyLevels.value.stopLoss);
+                
+                const priceChangeClass = computed(() => 
+                    currentPrice.value.change >= 0 ? 'text-success' : 'text-danger'
+                );
+                
+                const priceChangeSymbol = computed(() => 
+                    currentPrice.value.change >= 0 ? '+' : ''
+                );
+
+                const adviceColorClass = computed(() => {
+                    const action = todayAdvice.value.action;
+                    if (action === '买入') return 'text-success';
+                    if (action === '卖出') return 'text-danger';
+                    return 'text-warning';
+                });
+
+                const sentimentScoreClass = computed(() => {
+                    const score = sentiment.value.score;
+                    if (score >= 70) return 'text-success';
+                    if (score >= 40) return 'text-warning';
+                    return 'text-danger';
+                });
+
+                const marketStatus = computed(() => {
+                    const hour = new Date().getHours();
+                    if (hour >= 9 && hour < 16) {
+                        return '🟢 交易中';
+                    }
+                    return '⚪ 休市中';
+                });
+
+                return {
+                    loading,
+                    currentPrice,
+                    position,
+                    keyLevels,
+                    todayAdvice,
+                    factorScores,
+                    fundFlow,
+                    systemStatus,
+                    sentiment,
+                    news,
+                    isBuySignal,
+                    isStopLoss,
+                    priceChangeClass,
+                    priceChangeSymbol,
+                    adviceColorClass,
+                    sentimentScoreClass,
+                    marketStatus
+                };
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>
