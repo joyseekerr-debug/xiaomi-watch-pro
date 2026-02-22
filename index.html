@@ -566,8 +566,14 @@
                 const priceChangeClass = computed(() => currentPrice.value.change >= 0 ? 'text-success' : 'text-danger');
                 const priceChangeSymbol = computed(() => currentPrice.value.change >= 0 ? '+' : '');
 
-                const currentFundFlow = computed(() => fundFlowData.value[currentFundTab.value]);
-                const currentFundTabLabel = computed(() => fundFlowTabs.value.find(t => t.value === currentFundTab.value)?.label);
+                const currentFundFlow = computed(() => {
+                    const data = fundFlowData.value[currentFundTab.value];
+                    return data || { mainInflow: 0, retailInflow: 0, northbound: 0 };
+                });
+                const currentFundTabLabel = computed(() => {
+                    const tab = fundFlowTabs.value.find(t => t.value === currentFundTab.value);
+                    return tab?.label || '今日';
+                });
 
                 const adviceColorClass = computed(() => {
                     const action = todayAdvice.value.action;
