@@ -401,15 +401,79 @@
                 const lastUpdateDate = ref('2026-02-23');
                 
                 // 数据状态
-                const currentPrice = ref({});
-                const position = ref({});
-                const keyLevels = ref({});
-                const todayAdvice = ref({});
-                const factorScores = ref({ overall: 0, factors: {} });
-                const fundFlowData = ref({ today: {}, '5d': {}, '10d': {}, '20d': {} });
-                const systemStatus = ref({});
-                const sentiment = ref({ stats: {} });
-                const news = ref([]);
+                const currentPrice = ref({
+                    price: 35.36,
+                    change: -1.30,
+                    changePercent: -3.55,
+                    high: 36.86,
+                    low: 35.32,
+                    open: 36.66,
+                    prevClose: 36.66,
+                    volume: '9326.99万',
+                    turnover: '33.29亿'
+                });
+                const position = ref({
+                    shares: 1600,
+                    avgCost: 35.90,
+                    marketValue: 56576,
+                    profit: -864,
+                    profitPercent: -1.51,
+                    isProfit: false
+                });
+                const keyLevels = ref({
+                    buy: 34.0,
+                    sell: 42.0,
+                    stopLoss: 28.0
+                });
+                const todayAdvice = ref({
+                    action: '等待',
+                    reason: '距离买入位34.0还差3.9%',
+                    detailReason: '当前价格35.36，建议等待回调至34.0附近再考虑建仓'
+                });
+                const factorScores = ref({ 
+                    overall: 72.8, 
+                    factors: {
+                        price: { score: 75, weight: 0.30 },
+                        news: { score: 68, weight: 0.20 },
+                        fundFlow: { score: 45, weight: 0.20 },
+                        sentiment: { score: 58, weight: 0.10 },
+                        technical: { score: 65, weight: 0.15 },
+                        market: { score: 70, weight: 0.05 }
+                    },
+                    price: 75,
+                    news: 68,
+                    fundFlow: 45,
+                    sentiment: 58,
+                    technical: 65,
+                    market: 70
+                });
+                const fundFlowData = ref({
+                    today: { mainInflow: -2.35, retailInflow: 0.85, northbound: -1.20 },
+                    '5d': { mainInflow: -8.50, retailInflow: 3.20, northbound: -4.50 },
+                    '10d': { mainInflow: -15.20, retailInflow: 6.80, northbound: -8.30 },
+                    '20d': { mainInflow: -28.50, retailInflow: 12.50, northbound: -15.60 }
+                });
+                const systemStatus = ref({
+                    status: '正常监控中',
+                    nextUpdate: '2分钟后'
+                });
+                const sentiment = ref({
+                    score: 35,
+                    level: '负面',
+                    stats: { positive: 12, neutral: 28, negative: 45, total: 85 },
+                    reason: '近期高管言论偏谨慎，社交媒体负面情绪较多，机构评级下调',
+                    events: [
+                        { title: '雷军表示2025年是最艰难的一年', impact: -15, time: '3天前' },
+                        { title: '小米SU7销量不及预期传闻', impact: -10, time: '5天前' },
+                        { title: '多家机构下调目标价', impact: -8, time: '1周前' }
+                    ]
+                });
+                const news = ref([
+                    { title: '小米集团2月20日回购428万股，涉资1.52亿港元', url: 'https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-02-20/doc-inefukaq9026549.shtml', source: '新浪财经', time: '2天前', sentiment: 'positive', sentimentText: '正面' },
+                    { title: '小米SU7销量超预期，3月产能将提升', url: 'https://www.cls.cn/detail/1926440', source: '财联社', time: '3天前', sentiment: 'positive', sentimentText: '正面' },
+                    { title: '雷军：2025年是小米汽车关键之年', url: 'https://www.wallstreetcn.com/articles/1234567', source: '华尔街见闻', time: '5天前', sentiment: 'neutral', sentimentText: '中性' },
+                    { title: '摩根大通下调小米目标价至38港元', url: 'https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-02-18/doc-inefukaq9026548.shtml', source: '新浪财经', time: '1周前', sentiment: 'negative', sentimentText: '负面' }
+                ]);
                 const updateTimes = ref({});
                 
                 // 获取实时数据
