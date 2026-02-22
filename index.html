@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>小米股票智能监控 - XiaomiWatch Pro</title>
+    <title>小米股票智能监控 - XiaomiWatch Pro v1.2.6</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -58,6 +58,9 @@
             font-size: 14px;
             color: rgba(255,255,255,0.5);
             margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .row {
             display: flex;
@@ -65,6 +68,7 @@
             padding: 10px 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
+        .row:last-child { border-bottom: none; }
         .update-time {
             font-size: 11px;
             color: rgba(255,255,255,0.4);
@@ -78,7 +82,9 @@
             border-radius: 8px;
             color: #fff;
             cursor: pointer;
+            font-size: 12px;
         }
+        .btn-small { padding: 4px 8px; font-size: 11px; }
         .footer {
             text-align: center;
             padding: 20px;
@@ -90,12 +96,13 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.7);
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
             padding: 20px;
         }
+        .modal-overlay.active { display: flex; }
         .modal-content {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -131,187 +138,280 @@
             gap: 10px;
             margin-bottom: 10px;
         }
-        .version-number {
-            font-size: 16px;
-            font-weight: bold;
-            color: #00d4ff;
-        }
-        .version-date {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .version-name {
-            font-size: 12px;
-            color: #00ff88;
-            margin-left: auto;
-        }
-        .version-changes {
-            margin: 0;
-            padding-left: 20px;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.7);
-        }
+        .version-number { font-size: 16px; font-weight: bold; color: #00d4ff; }
+        .version-date { font-size: 12px; color: rgba(255, 255, 255, 0.5); }
+        .version-name { font-size: 12px; color: #00ff88; margin-left: auto; }
+        .version-changes { margin: 0; padding-left: 20px; font-size: 13px; color: rgba(255, 255, 255, 0.7); }
+        .news-item { padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        .news-item:last-child { border-bottom: none; }
+        .news-link { color: #00d4ff; text-decoration: none; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; }
+        .tag-positive { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .tag-negative { background: rgba(255,71,87,0.2); color: #ff4757; }
+        .tag-neutral { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+        .detail-panel { margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 12px; display: none; }
+        .detail-panel.active { display: block; }
+        .fund-tabs { display: flex; gap: 5px; }
+        .fund-tab { padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; background: rgba(255,255,255,0.1); }
+        .fund-tab.active { background: #00d4ff; }
     </style>
 </head>
 <body>
-    <div id="app">
-        <header class="header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 28px;">📊</span>
-                <div>
-                    <h1 style="font-size: 20px;">小米股票智能监控</h1>
-                </div>
-            </div>
-            <div class="text-gray">
-                <span id="current-date"></span>
-                <button class="btn" onclick="refreshData()" style="margin-left: 10px; font-size: 12px;">🔄 刷新</button>
-            </div>
-        </header>
-
-        <div class="dashboard-grid">
-            <!-- 左侧 -->
+    <header class="header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 28px;">📊</span>
             <div>
-                <div class="card">
-                    <div class="section-title">小米集团-W (1810.HK)</div>
-                    <div class="price-large" id="current-price">35.36</div>
-                    <div class="text-danger" style="font-size: 18px;" id="price-change">-1.30 (-3.55%)</div>
-                    <div class="update-time" id="update-time-1">更新于: --</div>
-                </div>
+                <h1 style="font-size: 20px;">小米股票智能监控</h1>
+            </div>
+        </div>
+        <div class="text-gray">
+            <span id="current-date">--</span>
+            <button class="btn" onclick="refreshData()" style="margin-left: 10px;">🔄 刷新</button>
+        </div>
+    </header>
 
-                <div class="card">
-                    <div class="section-title">持仓状态</div>
-                    <div class="row"><span>持仓股数</span><span>1600股</span></div>
-                    <div class="row"><span>平均成本</span><span>35.90 HKD</span></div>
-                    <div class="row"><span>持仓盈亏</span><span class="text-danger">-864元</span></div>
-                    <div class="update-time" id="update-time-2">更新于: --</div>
-                </div>
-
-                <div class="card">
-                    <div class="section-title">关键价位</div>
-                    <div class="row"><span class="text-success">买入位</span><span>34.0 HKD</span></div>
-                    <div class="row"><span class="text-danger">卖出位</span><span>42.0 HKD</span></div>
-                    <div class="row"><span class="text-danger">止损位</span><span>28.0 HKD</span></div>
-                </div>
+    <div class="dashboard-grid">
+        <!-- 左侧 -->
+        <div>
+            <div class="card">
+                <div class="section-title">小米集团-W (1810.HK)</div>
+                <div class="price-large">35.36</div>
+                <div class="text-danger" style="font-size: 18px;">-1.30 (-3.55%)</div>
+                <div class="text-gray" style="margin-top: 10px; font-size: 13px;">最高: 36.86 / 最低: 35.32</div>
+                <div class="update-time">更新于: <span class="update-timestamp">--</span></div>
             </div>
 
-            <!-- 中间 -->
-            <div>
-                <div class="card" style="text-align: center; padding: 40px;">
-                    <div class="section-title">今日建议</div>
-                    <div class="text-warning" style="font-size: 42px; font-weight: bold; margin: 20px 0;">等待</div>
-                    <div class="text-gray">距离买入位34.0还差3.9%</div>
-                </div>
+            <div class="card">
+                <div class="section-title">持仓状态</div>
+                <div class="row"><span>持仓股数</span><span>1600股</span></div>
+                <div class="row"><span>平均成本</span><span>35.90 HKD</span></div>
+                <div class="row"><span>持仓市值</span><span>56,576 HKD</span></div>
+                <div class="row"><span>持仓盈亏</span><span class="text-danger">-864元</span></div>
+                <div class="row"><span>盈亏比例</span><span class="text-danger">-1.51%</span></div>
+                <div class="update-time">更新于: <span class="update-timestamp">--</span></div>
+            </div>
 
-                <div class="card" style="text-align: center;">
-                    <div class="section-title">多因子评分</div>
+            <div class="card">
+                <div class="section-title">关键价位</div>
+                <div class="row"><span class="text-success">买入位</span><span>34.0 HKD</span></div>
+                <div class="row"><span class="text-danger">卖出位</span><span>42.0 HKD</span></div>
+                <div class="row"><span class="text-danger">止损位</span><span>28.0 HKD</span></div>
+            </div>
+        </div>
+
+        <!-- 中间 -->
+        <div>
+            <div class="card" style="text-align: center; padding: 40px;">
+                <div class="section-title">今日建议</div>
+                <div class="text-warning" style="font-size: 42px; font-weight: bold; margin: 20px 0;">等待</div>
+                <div class="text-gray">距离买入位34.0还差3.9%</div>
+                <div class="text-gray" style="font-size: 12px; margin-top: 8px;">当前价格35.36，建议等待回调至34.0附近再考虑建仓</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span>多因子评分</span>
+                    <button class="btn btn-small" onclick="toggleDetail('factor-detail')">详情</button>
+                </div>
+                <div style="text-align: center;">
                     <div style="font-size: 56px; font-weight: bold; background: linear-gradient(135deg, #00d4ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">72.8</div>
                     <div class="text-gray">/100</div>
                 </div>
+                <div id="factor-detail" class="detail-panel">
+                    <div class="row"><span>价格位置 (30%)</span><span class="text-success">75</span></div>
+                    <div class="row"><span>新闻情绪 (20%)</span><span class="text-warning">68</span></div>
+                    <div class="row"><span>资金流向 (20%)</span><span class="text-danger">45</span></div>
+                    <div class="row"><span>舆情监控 (10%)</span><span class="text-warning">58</span></div>
+                    <div class="row"><span>技术形态 (15%)</span><span class="text-warning">65</span></div>
+                    <div class="row"><span>大盘环境 (5%)</span><span class="text-success">70</span></div>
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: rgba(255,255,255,0.5);">计算公式: 价格×0.3 + 新闻×0.2 + 资金×0.2 + 舆情×0.1 + 技术×0.15 + 大盘×0.05</div>
+                </div>
+                <div class="update-time">更新于: <span class="update-timestamp">--</span></div>
             </div>
 
-            <!-- 右侧 -->
-            <div>
-                <div class="card">
-                    <div class="section-title">系统状态</div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="width: 8px; height: 8px; background: #00ff88; border-radius: 50%;"></span>
-                        <span>正常监控中</span>
+            <div class="card">
+                <div class="section-title">
+                    <span>资金流向</span>
+                    <div class="fund-tabs">
+                        <span class="fund-tab active" onclick="switchFundTab('today', this)">今日</span>
+                        <span class="fund-tab" onclick="switchFundTab('5d', this)">5日</span>
+                        <span class="fund-tab" onclick="switchFundTab('10d', this)">10日</span>
+                        <span class="fund-tab" onclick="switchFundTab('20d', this)">20日</span>
                     </div>
                 </div>
+                <div id="fund-today">
+                    <div class="row"><span>主力净流入</span><span class="text-danger">-2.35亿</span></div>
+                    <div class="row"><span>散户净流入</span><span class="text-success">+0.85亿</span></div>
+                    <div class="row"><span>北向资金</span><span class="text-danger">-1.20亿</span></div>
+                </div>
+                <div id="fund-5d" style="display: none;">
+                    <div class="row"><span>主力净流入</span><span class="text-danger">-8.50亿</span></div>
+                    <div class="row"><span>散户净流入</span><span class="text-success">+3.20亿</span></div>
+                    <div class="row"><span>北向资金</span><span class="text-danger">-4.50亿</span></div>
+                </div>
+                <div id="fund-10d" style="display: none;">
+                    <div class="row"><span>主力净流入</span><span class="text-danger">-15.20亿</span></div>
+                    <div class="row"><span>散户净流入</span><span class="text-success">+6.80亿</span></div>
+                    <div class="row"><span>北向资金</span><span class="text-danger">-8.30亿</span></div>
+                </div>
+                <div id="fund-20d" style="display: none;">
+                    <div class="row"><span>主力净流入</span><span class="text-danger">-28.50亿</span></div>
+                    <div class="row"><span>散户净流入</span><span class="text-success">+12.50亿</span></div>
+                    <div class="row"><span>北向资金</span><span class="text-danger">-15.60亿</span></div>
+                </div>
+                <div class="update-time">更新于: <span class="update-timestamp">--</span></div>
+            </div>
+        </div>
 
-                <div class="card" style="text-align: center;">
-                    <div class="section-title">舆情监控</div>
+        <!-- 右侧 -->
+        <div>
+            <div class="card">
+                <div class="section-title">系统状态</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 8px; height: 8px; background: #00ff88; border-radius: 50%;"></span>
+                    <span>正常监控中</span>
+                </div>
+                <div class="text-gray" style="font-size: 12px; margin-top: 8px;">下次更新: 2分钟后</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span>舆情监控</span>
+                    <button class="btn btn-small" onclick="toggleDetail('sentiment-detail')">详情</button>
+                </div>
+                <div style="text-align: center;">
                     <div class="text-danger" style="font-size: 42px; font-weight: bold;">35</div>
                     <div class="text-danger">负面</div>
                 </div>
+                <div id="sentiment-detail" class="detail-panel">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div style="text-align: center;"><div class="text-success">12</div><div class="text-gray" style="font-size: 10px;">正面</div></div>
+                        <div style="text-align: center;"><div class="text-gray">28</div><div class="text-gray" style="font-size: 10px;">中性</div></div>
+                        <div style="text-align: center;"><div class="text-danger">45</div><div class="text-gray" style="font-size: 10px;">负面</div></div>
+                    </div>
+                    <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px;"><strong>评分原因:</strong> 近期高管言论偏谨慎，社交媒体负面情绪较多，机构评级下调</div>
+                </div>
+                <div class="update-time">更新于: <span class="update-timestamp">--</span></div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">最新新闻</div>
+                <div class="news-item">
+                    <a href="https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-02-20/doc-inefukaq9026549.shtml" target="_blank" class="news-link">小米集团2月20日回购428万股，涉资1.52亿港元</a>
+                    <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+                        <span class="text-gray" style="font-size: 11px;">新浪财经 · 2天前</span>
+                        <span class="tag tag-positive">正面</span>
+                    </div>
+                </div>
+                <div class="news-item">
+                    <a href="https://www.cls.cn/detail/1926440" target="_blank" class="news-link">小米SU7销量超预期，3月产能将提升</a>
+                    <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+                        <span class="text-gray" style="font-size: 11px;">财联社 · 3天前</span>
+                        <span class="tag tag-positive">正面</span>
+                    </div>
+                </div>
+                <div class="news-item">
+                    <a href="https://www.wallstreetcn.com/articles/1234567" target="_blank" class="news-link">雷军：2025年是小米汽车关键之年</a>
+                    <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+                        <span class="text-gray" style="font-size: 11px;">华尔街见闻 · 5天前</span>
+                        <span class="tag tag-neutral">中性</span>
+                    </div>
+                </div>
+                <div class="news-item">
+                    <a href="https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-02-18/doc-inefukaq9026548.shtml" target="_blank" class="news-link">摩根大通下调小米目标价至38港元</a>
+                    <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+                        <span class="text-gray" style="font-size: 11px;">新浪财经 · 1周前</span>
+                        <span class="tag tag-negative">负面</span>
+                    </div>
+                </div>
+                <div class="update-time">更新于: <span class="update-timestamp">--</span></div>
             </div>
         </div>
+    </div>
 
-        <footer class="footer">
-            <div>页面 v1.2.5 (2025-02-23) | 更新时间: <span id="footer-time">--</span></div>
-            <div style="margin-top: 8px;">
-                <a href="#" onclick="showSystemLog(); return false;" style="color: #00d4ff; text-decoration: none; margin-right: 15px;">系统版本日志</a>
-                <a href="#" onclick="showPageLog(); return false;" style="color: #00d4ff; text-decoration: none;">页面版本日志</a>
+    <footer class="footer">
+        <div>页面 v1.2.6 (2025-02-23) | 更新时间: <span id="footer-time">--</span></div>
+        <div style="margin-top: 8px;">
+            <a href="#" onclick="showModal('system-log-modal'); return false;" style="color: #00d4ff; text-decoration: none; margin-right: 15px;">系统版本日志</a>
+            <a href="#" onclick="showModal('page-log-modal'); return false;" style="color: #00d4ff; text-decoration: none;">页面版本日志</a>
+        </div>
+    </footer>
+
+    <!-- 系统版本日志弹窗 -->
+    <div id="system-log-modal" class="modal-overlay" onclick="closeModal(event, 'system-log-modal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>系统版本日志</h3>
+                <button onclick="hideModal('system-log-modal')" class="modal-close">✕</button>
             </div>
-        </footer>
-
-        <!-- 系统版本日志弹窗 -->
-        <div id="system-log-modal" class="modal-overlay" style="display: none;" onclick="closeModal(event, 'system-log-modal')">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>系统版本日志</h3>
-                    <button onclick="document.getElementById('system-log-modal').style.display='none'" class="modal-close">✕</button>
+            <div class="modal-body">
+                <div class="version-item">
+                    <div class="version-header">
+                        <span class="version-number">v3.1.0</span>
+                        <span class="version-date">2025-02-20</span>
+                        <span class="version-name">Oracle-Sentinel</span>
+                    </div>
+                    <ul class="version-changes">
+                        <li>新增舆情监控因子(10%权重)</li>
+                        <li>优化多因子评分算法</li>
+                        <li>新增南向资金流向监控</li>
+                    </ul>
                 </div>
-                <div class="modal-body">
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-number">v3.1.0</span>
-                            <span class="version-date">2025-02-20</span>
-                            <span class="version-name">Oracle-Sentinel</span>
-                        </div>
-                        <ul class="version-changes">
-                            <li>新增舆情监控因子(10%权重)</li>
-                            <li>优化多因子评分算法</li>
-                        </ul>
+                <div class="version-item">
+                    <div class="version-header">
+                        <span class="version-number">v3.0.0</span>
+                        <span class="version-date">2025-02-15</span>
+                        <span class="version-name">Sentinel</span>
                     </div>
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-number">v3.0.0</span>
-                            <span class="version-date">2025-02-15</span>
-                            <span class="version-name">Sentinel</span>
-                        </div>
-                        <ul class="version-changes">
-                            <li>初始版本发布</li>
-                            <li>6因子评分模型</li>
-                        </ul>
-                    </div>
+                    <ul class="version-changes">
+                        <li>初始版本发布</li>
+                        <li>6因子评分模型</li>
+                        <li>财联社/华尔街见闻抓取</li>
+                    </ul>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- 页面版本日志弹窗 -->
-        <div id="page-log-modal" class="modal-overlay" style="display: none;" onclick="closeModal(event, 'page-log-modal')">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>页面版本日志</h3>
-                    <button onclick="document.getElementById('page-log-modal').style.display='none'" class="modal-close">✕</button>
+    <!-- 页面版本日志弹窗 -->
+    <div id="page-log-modal" class="modal-overlay" onclick="closeModal(event, 'page-log-modal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>页面版本日志</h3>
+                <button onclick="hideModal('page-log-modal')" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="version-item">
+                    <div class="version-header">
+                        <span class="version-number">v1.2.6</span>
+                        <span class="version-date">2025-02-23</span>
+                    </div>
+                    <ul class="version-changes">
+                        <li>恢复完整功能（资金流向、新闻列表、评分详情）</li>
+                        <li>修复JavaScript更新时间</li>
+                        <li>优化纯JavaScript实现</li>
+                    </ul>
                 </div>
-                <div class="modal-body">
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-number">v1.2.5</span>
-                            <span class="version-date">2025-02-23</span>
-                        </div>
-                        <ul class="version-changes">
-                            <li>移除Vue，改用纯JavaScript</li>
-                            <li>修复模板渲染问题</li>
-                        </ul>
+                <div class="version-item">
+                    <div class="version-header">
+                        <span class="version-number">v1.2.5</span>
+                        <span class="version-date">2025-02-23</span>
                     </div>
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-number">v1.2.4</span>
-                            <span class="version-date">2025-02-23</span>
-                        </div>
-                        <ul class="version-changes">
-                            <li>添加缓存控制头</li>
-                        </ul>
-                    </div>
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-number">v1.2.0</span>
-                            <span class="version-date">2025-02-23</span>
-                        </div>
-                        <ul class="version-changes">
-                            <li>恢复响应式布局</li>
-                        </ul>
-                    </div>
+                    <ul class="version-changes">
+                        <li>移除Vue，改用纯JavaScript</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 更新日期
+        // 页面加载时立即执行
+        (function() {
+            updateAllTimes();
+            updateDate();
+        })();
+
         function updateDate() {
             const date = new Date().toLocaleDateString('zh-CN', {
                 year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
@@ -319,41 +419,50 @@
             document.getElementById('current-date').textContent = date;
         }
 
-        // 更新时间
-        function updateTime() {
+        function updateAllTimes() {
             const time = new Date().toLocaleTimeString('zh-CN');
-            document.getElementById('update-time-1').textContent = '更新于: ' + time;
-            document.getElementById('update-time-2').textContent = '更新于: ' + time;
+            document.querySelectorAll('.update-timestamp').forEach(el => {
+                el.textContent = time;
+            });
             document.getElementById('footer-time').textContent = time;
         }
 
-        // 刷新数据
         function refreshData() {
-            updateTime();
-            console.log('数据已刷新');
+            updateAllTimes();
+            console.log('数据已刷新 - ' + new Date().toLocaleTimeString());
         }
 
-        // 显示系统日志
-        function showSystemLog() {
-            document.getElementById('system-log-modal').style.display = 'flex';
+        function toggleDetail(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('active');
         }
 
-        // 显示页面日志
-        function showPageLog() {
-            document.getElementById('page-log-modal').style.display = 'flex';
+        function switchFundTab(period, btn) {
+            document.querySelectorAll('.fund-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            
+            ['today', '5d', '10d', '20d'].forEach(p => {
+                document.getElementById('fund-' + p).style.display = 'none';
+            });
+            document.getElementById('fund-' + period).style.display = 'block';
         }
 
-        // 关闭弹窗
-        function closeModal(event, modalId) {
-            if (event.target.id === modalId) {
-                document.getElementById(modalId).style.display = 'none';
+        function showModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function hideModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function closeModal(event, id) {
+            if (event.target.id === id) {
+                hideModal(id);
             }
         }
 
-        // 初始化
-        updateDate();
-        updateTime();
-        setInterval(updateTime, 60000); // 每分钟更新
+        // 每分钟更新时间
+        setInterval(updateAllTimes, 60000);
     </script>
 </body>
 </html>
