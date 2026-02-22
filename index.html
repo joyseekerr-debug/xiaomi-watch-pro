@@ -370,14 +370,75 @@
 
             <!-- 页脚版本信息 -->
             <footer class="version-footer">
-                <div>XiaomiWatch Pro v3.1.0 (Oracle-Sentinel)</div>
+                <div>XiaomiWatch Pro <span class="text-accent">v3.1.0</span> (系统版本) | 页面版本 <span class="text-accent">v1.0.1</span></div>
                 <div class="mt-1">最新更新: {{ lastUpdateDate }} | 数据更新时间: {{ currentTime }}</div>
                 <div class="mt-2 text-xs">
-                    <span class="mx-2"><a href="#" class="news-link">更新日志</a></span>
-                    <span class="mx-2"><a href="#" class="news-link">系统文档</a></span>
-                    <span class="mx-2"><a href="#" class="news-link">反馈问题</a></span>
+                    <span class="mx-2"><a href="#" @click.prevent="showUpdateLog = true" class="news-link">更新日志</a></span>
+                    <span class="mx-2"><a href="#" @click.prevent="showSystemDoc = true" class="news-link">系统文档</a></span>
                 </div>
             </footer>
+            
+            <!-- 更新日志弹窗 -->
+            <div v-if="showUpdateLog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showUpdateLog = false">
+                <div class="glass-card max-w-md w-full mx-4 max-h-96 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold">更新日志</h3>
+                        <button @click="showUpdateLog = false" class="text-gray-400 hover:text-white">✕</button>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="border-l-2 border-accent pl-3">
+                            <div class="text-accent">v1.0.1 - 2026-02-23</div>
+                            <ul class="text-gray-400 mt-1 list-disc list-inside">
+                                <li>修正持仓股数为1600股</li>
+                                <li>修复时间显示问题</li>
+                                <li>添加版本说明</li>
+                                <li>添加更新日志弹窗</li>
+                            </ul>
+                        </div>
+                        <div class="border-l-2 border-gray-600 pl-3">
+                            <div class="text-gray-400">v1.0.0 - 2026-02-22</div>
+                            <ul class="text-gray-500 mt-1 list-disc list-inside">
+                                <li>初始版本发布</li>
+                                <li>实现基础监控功能</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统文档弹窗 -->
+            <div v-if="showSystemDoc" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showSystemDoc = false">
+                <div class="glass-card max-w-md w-full mx-4 max-h-96 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold">系统文档</h3>
+                        <button @click="showSystemDoc = false" class="text-gray-400 hover:text-white">✕</button>
+                    </div>
+                    <div class="space-y-3 text-sm text-gray-300">
+                        <p><strong class="text-accent">XiaomiWatch Pro</strong> 是专为小米集团(01810.HK)股票监控设计的智能仪表盘。</p>
+                        
+                        <div>
+                            <div class="text-accent mb-1">核心功能</div>
+                            <ul class="text-gray-400 list-disc list-inside space-y-1">
+                                <li>实时股价监控与关键位提醒</li>
+                                <li>6因子评分模型（价格/新闻/资金/舆情/技术/大盘）</li>
+                                <li>南向资金流向追踪</li>
+                                <li>舆情情绪分析</li>
+                                <li>科学买入/卖出计划</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <div class="text-accent mb-1">评分权重</div>
+                            <div class="text-gray-400">价格30% / 新闻20% / 资金20% / 舆情10% / 技术15% / 大盘5%</div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-accent mb-1">数据来源</div>
+                            <div class="text-gray-400">itick / 新浪财经 / 东方财富 / AKShare</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -389,6 +450,8 @@
                 const loading = ref(false);
                 const showFactorDetail = ref(false);
                 const showSentimentDetail = ref(false);
+                const showUpdateLog = ref(false);
+                const showSystemDoc = ref(false);
                 const currentFundTab = ref('today');
 
                 // 当前日期时间
@@ -397,17 +460,32 @@
                 const currentTime = ref(now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }));
                 const lastUpdateDate = ref('2026-02-23');
 
-                // 更新时间戳
+                // 更新时间戳（使用动态生成的当前时间）
+                const getCurrentTimeStr = () => {
+                    const now = new Date();
+                    return now.toLocaleString('zh-CN', { 
+                        year: 'numeric', 
+                        month: '2-digit', 
+                        day: '2-digit', 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false 
+                    }).replace(/\//g, '-');
+                };
+                
+                const currentTimeStr = getCurrentTimeStr();
+                
                 const updateTimes = ref({
-                    price: '2026-02-23 09:30:00',
-                    position: '2026-02-23 09:30:00',
-                    keyLevels: '2026-02-23 09:30:00',
-                    advice: '2026-02-23 09:30:00',
-                    factor: '2026-02-23 09:30:00',
-                    fundFlow: '2026-02-23 09:30:00',
-                    system: '2026-02-23 09:30:00',
-                    sentiment: '2026-02-23 09:30:00',
-                    news: '2026-02-23 09:30:00'
+                    price: currentTimeStr,
+                    position: currentTimeStr,
+                    keyLevels: currentTimeStr,
+                    advice: currentTimeStr,
+                    factor: currentTimeStr,
+                    fundFlow: currentTimeStr,
+                    system: currentTimeStr,
+                    sentiment: currentTimeStr,
+                    news: currentTimeStr
                 });
 
                 // 当前价格
@@ -421,12 +499,12 @@
                     prevClose: 36.66
                 });
 
-                // 持仓数据（已修正）
+                // 持仓数据（已修正为1600股）
                 const position = ref({
-                    shares: 1000,
+                    shares: 1600,
                     avgCost: 35.90,
-                    marketValue: 35360,
-                    profit: -540,
+                    marketValue: 56576,
+                    profit: -864,
                     profitPercent: -1.51,
                     isProfit: false
                 });
@@ -579,6 +657,8 @@
                     loading,
                     showFactorDetail,
                     showSentimentDetail,
+                    showUpdateLog,
+                    showSystemDoc,
                     currentFundTab,
                     currentDate,
                     currentTime,
