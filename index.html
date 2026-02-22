@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>小米股票智能监控 - XiaomiWatch Pro v1.3.0</title>
+    <title>小米股票智能监控 - XiaomiWatch Pro v1.3.1</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -254,6 +254,39 @@
                 </div>
                 <div class="update-time">更新于: <span id="update-time-3">--</span></div>
             </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span>资金流向</span>
+                    <div class="fund-tabs">
+                        <span class="fund-tab active" onclick="switchFundTab('today', this)">今日</span>
+                        <span class="fund-tab" onclick="switchFundTab('5d', this)">5日</span>
+                        <span class="fund-tab" onclick="switchFundTab('10d', this)">10日</span>
+                        <span class="fund-tab" onclick="switchFundTab('20d', this)">20日</span>
+                    </div>
+                </div>
+                <div id="fund-today">
+                    <div class="row"><span>主力净流入</span><span class="text-danger">-2.35亿</span></div>
+                    <div class="row"><span>散户净流入</span><span class="text-success">+0.85亿</span></div>
+                    <div class="row"><span>北向资金</span><span class="text-danger">-1.20亿</span></div>
+                </div>
+                <div id="fund-5d" style="display: none;">
+                    <div class="row"><span>主力净流入</span><span class="text-danger">-8.50亿</span></div>
+                    <div class="row"><span>散户净流入</span><span class="text-success">+3.20亿</span></div>
+                    <div class="row"><span>北向资金</span><span class="text-danger">-4.50亿</span></div>
+                </div>
+                <div id="fund-10d" style="display: none;">
+                    <div class="row"><span>主力净流入</span><span class="text-danger">-15.20亿</span></div>
+                    <div class="row"><span>散户净流入</span><span class="text-success">+6.80亿</span></div>
+                    <div class="row"><span>北向资金</span><span class="text-danger">-8.30亿</span></div>
+                </div>
+                <div id="fund-20d" style="display: none;">
+                    <div class="row"><span>主力净流入</span><span class="text-danger">-28.50亿</span></div>
+                    <div class="row"><span>散户净流入</span><span class="text-success">+12.50亿</span></div>
+                    <div class="row"><span>北向资金</span><span class="text-danger">-15.60亿</span></div>
+                </div>
+                <div class="update-time">更新于: <span id="update-time-4">--</span></div>
+            </div>
         </div>
 
         <!-- 右侧 -->
@@ -272,11 +305,34 @@
                 <div id="sentiment-score" style="font-size: 42px; font-weight: bold;">--</div>
                 <div id="sentiment-level">--</div>
             </div>
+
+            <div class="card">
+                <div class="section-title">最新新闻</div>
+                <div style="font-size: 13px;">
+                    <div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <a href="#" style="color: #00d4ff; text-decoration: none;">小米集团2月20日回购428万股</a>
+                        <div class="text-gray" style="font-size: 11px; margin-top: 4px;">新浪财经 · 2天前 · <span style="color: #00ff88;">正面</span></div>
+                    </div>
+                    <div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <a href="#" style="color: #00d4ff; text-decoration: none;">小米SU7销量超预期</a>
+                        <div class="text-gray" style="font-size: 11px; margin-top: 4px;">财联社 · 3天前 · <span style="color: #00ff88;">正面</span></div>
+                    </div>
+                    <div style="padding: 10px 0;">
+                        <a href="#" style="color: #00d4ff; text-decoration: none;">摩根大通下调目标价</a>
+                        <div class="text-gray" style="font-size: 11px; margin-top: 4px;">新浪财经 · 1周前 · <span style="color: #ff4757;">负面</span></div>
+                    </div>
+                </div>
+                <div class="update-time">更新于: <span id="update-time-5">--</span></div>
+            </div>
         </div>
     </div>
 
     <footer class="footer">
-        <div>页面 v1.3.0 (2025-02-23) | 更新时间: <span id="footer-time">--</span> | 数据来源: <span id="data-source">API</span></div>
+        <div>页面 v1.3.1 (2025-02-23) | 更新时间: <span id="footer-time">--</span> | 数据来源: <span id="data-source">API</span></div>
+        <div style="margin-top: 8px;">
+            <a href="#" onclick="alert('系统版本: v3.1.0 Oracle-Sentinel (2025-02-20)\n页面版本: v1.3.1 (2025-02-23)'); return false;" style="color: #00d4ff; text-decoration: none; margin-right: 15px;">系统版本日志</a>
+            <a href="#" onclick="alert('v1.3.1 - 恢复资金流向和新闻列表\nv1.3.0 - 连接API\nv1.2.6 - 完整功能\nv1.2.5 - 纯JavaScript'); return false;" style="color: #00d4ff; text-decoration: none;">页面版本日志</a>
+        </div>
     </footer>
 
     <script>
@@ -434,6 +490,17 @@
 
         function toggleDetail(id) {
             document.getElementById(id).classList.toggle('active');
+        }
+
+        function switchFundTab(period, btn) {
+            document.querySelectorAll('.fund-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            ['today', '5d', '10d', '20d'].forEach(p => {
+                const el = document.getElementById('fund-' + p);
+                if (el) el.style.display = 'none';
+            });
+            const target = document.getElementById('fund-' + period);
+            if (target) target.style.display = 'block';
         }
     </script>
 </body>
