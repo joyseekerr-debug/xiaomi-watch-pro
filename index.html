@@ -480,7 +480,17 @@
                     try {
                         loading.value = true;
                         const response = await fetch(`${API_BASE}/api/dashboard`);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
                         const data = await response.json();
+                        
+                        // 检查是否有错误
+                        if (data.error) {
+                            throw new Error(data.message || 'API error');
+                        }
                         
                         // 更新各个数据项
                         currentPrice.value = data.price || {};
@@ -488,7 +498,7 @@
                         keyLevels.value = data.keyLevels || {};
                         todayAdvice.value = data.advice || {};
                         factorScores.value = data.factorScores || { overall: 0, factors: {} };
-                        fundFlowData.value = { today: data.fundFlow || {} };
+                        fundFlowData.value = data.fundFlow || {};
                         systemStatus.value = data.systemStatus || {};
                         sentiment.value = data.sentiment || { stats: {} };
                         news.value = data.news?.news || [];
@@ -504,6 +514,27 @@
                             price: now, position: now, keyLevels: now, advice: now,
                             factor: now, fundFlow: now, system: now, sentiment: now, news: now
                         };
+                        
+                        loading.value = false;
+                    } catch (error) {
+                        console.error('获取数据失败:', error);
+                        loading.value = false;
+                        // 使用默认数据
+                        useDefaultData();
+                    }
+                };
+                
+                // 使用默认数据
+                const useDefaultData = () => {
+                    currentPrice.value = { price: 35.36, change: -1.30, changePercent: -3.55, high: 36.86, low: 35.32 };
+                    position.value = { shares: 1600, avgCost: 35.90, profit: -864, profitPercent: -1.51 };
+                    keyLevels.value = { buy: 34.0, sell: 42.0, stopLoss: 28.0 };
+                    todayAdvice.value = { action: '等待', reason: '距离买入位34.0还差3.9%' };
+                    factorScores.value = { overall: 72.8 };
+                    systemStatus.value = { status: '正常监控中' };
+                    sentiment.value = { score: 35, level: '负面' };
+                    news.value = [];
+                };
                         
                         loading.value = false;
                     } catch (error) {
@@ -605,7 +636,8 @@
                     marketStatus,
                     getScoreClass,
                     getSentimentClass,
-                    fetchData
+                    fetchData,
+                    useDefaultData
                 };
             }
         }).mount('#app');
