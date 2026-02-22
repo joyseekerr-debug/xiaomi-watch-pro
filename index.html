@@ -170,6 +170,113 @@
         .fade-enter-from, .fade-leave-to {
             opacity: 0;
         }
+
+        /* 弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .version-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .version-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .version-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .version-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .version-date {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .version-name {
+            font-size: 12px;
+            color: #00ff88;
+            margin-left: auto;
+        }
+
+        .version-changes {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .version-changes li {
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -184,9 +291,6 @@
                     <span style="font-size: 28px;">📊</span>
                     <div>
                         <h1 style="font-size: 20px; margin-bottom: 4px;">小米股票智能监控</h1>
-                        <div style="font-size: 12px; color: #00d4ff;">
-                    系统 v3.1.0 (2025-02-20) · 页面 v3.2.2 (2025-02-23)
-                </div>
                     </div>
                 </div>
                 <div class="text-gray">
@@ -430,11 +534,58 @@
             </div>
 
             <footer class="footer">
-                <div>系统 v3.1.0 Oracle-Sentinel (2025-02-20) | 页面 v3.2.2 (2025-02-23) | 更新时间: {{ updateTime }}</div>
+                <div>页面 v1.2.2 (2025-02-23) | 更新时间: {{ updateTime }}</div>
+                <div style="margin-top: 8px;">
+                    <a href="#" @click.prevent="showSystemLog = true" style="color: #00d4ff; text-decoration: none; margin-right: 15px;">系统版本日志</a>
+                    <a href="#" @click.prevent="showPageLog = true" style="color: #00d4ff; text-decoration: none;">页面版本日志</a>
+                </div>
                 <div style="margin-top: 8px; color: rgba(255,255,255,0.3);">
                     数据来源: {{ dataSource }}
                 </div>
             </footer>
+
+            <!-- 系统版本日志弹窗 -->
+            <div v-if="showSystemLog" class="modal-overlay" @click.self="showSystemLog = false">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>系统版本日志</h3>
+                        <button @click="showSystemLog = false" class="modal-close">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-for="(log, index) in systemVersionLog" :key="index" class="version-item">
+                            <div class="version-header">
+                                <span class="version-number">v{{ log.version }}</span>
+                                <span class="version-date">{{ log.date }}</span>
+                                <span class="version-name">{{ log.name }}</span>
+                            </div>
+                            <ul class="version-changes">
+                                <li v-for="(change, cidx) in log.changes" :key="cidx">{{ change }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 页面版本日志弹窗 -->
+            <div v-if="showPageLog" class="modal-overlay" @click.self="showPageLog = false">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>页面版本日志</h3>
+                        <button @click="showPageLog = false" class="modal-close">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-for="(log, index) in pageVersionLog" :key="index" class="version-item">
+                            <div class="version-header">
+                                <span class="version-number">v{{ log.version }}</span>
+                                <span class="version-date">{{ log.date }}</span>
+                            </div>
+                            <ul class="version-changes">
+                                <li v-for="(change, cidx) in log.changes" :key="cidx">{{ change }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -446,6 +597,8 @@
                 const loading = ref(true);
                 const showFactorDetail = ref(false);
                 const showSentimentDetail = ref(false);
+                const showSystemLog = ref(false);
+                const showPageLog = ref(false);
                 const currentFundTab = ref('today');
                 const dataSource = ref('默认数据');
                 const updateTime = ref('');
@@ -528,6 +681,21 @@
                     { title: '雷军：2025年是小米汽车关键之年', url: 'https://www.wallstreetcn.com/articles/1234567', source: '华尔街见闻', time: '5天前', sentiment: 'neutral', sentimentText: '中性' },
                     { title: '摩根大通下调小米目标价至38港元', url: 'https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-02-18/doc-inefukaq9026548.shtml', source: '新浪财经', time: '1周前', sentiment: 'negative', sentimentText: '负面' }
                 ]);
+
+                // 系统版本日志
+                const systemVersionLog = ref([
+                    { version: '3.1.0', date: '2025-02-20', name: 'Oracle-Sentinel', changes: ['新增舆情监控因子(10%权重)', '优化多因子评分算法', '新增南向资金流向监控'] },
+                    { version: '3.0.0', date: '2025-02-15', name: 'Sentinel', changes: ['初始版本发布', '实现6因子评分模型', '集成财联社/华尔街见闻抓取'] }
+                ]);
+
+                // 页面版本日志
+                const pageVersionLog = ref([
+                    { version: '1.2.2', date: '2025-02-23', changes: ['移除头部版本显示', '添加版本日志弹窗', '优化页脚布局'] },
+                    { version: '1.2.1', date: '2025-02-23', changes: ['修复版本号显示', '添加完整日期'] },
+                    { version: '1.2.0', date: '2025-02-23', changes: ['恢复响应式三栏布局', '添加完整Vue功能', '实现数据自动刷新'] },
+                    { version: '1.1.0', date: '2025-02-23', changes: ['简化页面为纯HTML', '修复Vue渲染问题'] },
+                    { version: '1.0.0', date: '2025-02-22', changes: ['初始版本发布', '基础股价显示', '持仓状态展示'] }
+                ]);
                 
                 // 计算属性
                 const currentDate = computed(() => {
@@ -598,6 +766,8 @@
                     loading,
                     showFactorDetail,
                     showSentimentDetail,
+                    showSystemLog,
+                    showPageLog,
                     currentFundTab,
                     dataSource,
                     updateTime,
@@ -611,6 +781,8 @@
                     systemStatus,
                     sentiment,
                     news,
+                    systemVersionLog,
+                    pageVersionLog,
                     currentDate,
                     currentFundFlow,
                     adviceColorClass,
