@@ -6,8 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>小米股票智能监控 - XiaomiWatch Pro v1.2.4</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>小米股票智能监控 - XiaomiWatch Pro</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -164,8 +163,8 @@
                 </div>
             </div>
             <div class="text-gray">
-                {{ currentDate }}
-                <button class="btn" @click="refreshData" style="margin-left: 10px; font-size: 12px;">🔄 刷新</button>
+                <span id="current-date"></span>
+                <button class="btn" onclick="refreshData()" style="margin-left: 10px; font-size: 12px;">🔄 刷新</button>
             </div>
         </header>
 
@@ -174,27 +173,24 @@
             <div>
                 <div class="card">
                     <div class="section-title">小米集团-W (1810.HK)</div>
-                    <div class="price-large">{{ currentPrice.price }}</div>
-                    <div :class="currentPrice.change >= 0 ? 'text-success' : 'text-danger'" style="font-size: 18px;">
-                        {{ currentPrice.change >= 0 ? '+' : '' }}{{ currentPrice.change }}
-                        ({{ currentPrice.change >= 0 ? '+' : '' }}{{ currentPrice.changePercent }}%)
-                    </div>
-                    <div class="update-time">更新于: {{ updateTime }}</div>
+                    <div class="price-large" id="current-price">35.36</div>
+                    <div class="text-danger" style="font-size: 18px;" id="price-change">-1.30 (-3.55%)</div>
+                    <div class="update-time" id="update-time-1">更新于: --</div>
                 </div>
 
                 <div class="card">
                     <div class="section-title">持仓状态</div>
-                    <div class="row"><span>持仓股数</span><span>{{ position.shares }}股</span></div>
-                    <div class="row"><span>平均成本</span><span>{{ position.avgCost }} HKD</span></div>
-                    <div class="row"><span>持仓盈亏</span><span :class="position.profit >= 0 ? 'text-success' : 'text-danger'">{{ position.profit >= 0 ? '+' : '' }}{{ position.profit }}元</span></div>
-                    <div class="update-time">更新于: {{ updateTime }}</div>
+                    <div class="row"><span>持仓股数</span><span>1600股</span></div>
+                    <div class="row"><span>平均成本</span><span>35.90 HKD</span></div>
+                    <div class="row"><span>持仓盈亏</span><span class="text-danger">-864元</span></div>
+                    <div class="update-time" id="update-time-2">更新于: --</div>
                 </div>
 
                 <div class="card">
                     <div class="section-title">关键价位</div>
-                    <div class="row"><span class="text-success">买入位</span><span>{{ keyLevels.buy }} HKD</span></div>
-                    <div class="row"><span class="text-danger">卖出位</span><span>{{ keyLevels.sell }} HKD</span></div>
-                    <div class="row"><span class="text-danger">止损位</span><span>{{ keyLevels.stopLoss }} HKD</span></div>
+                    <div class="row"><span class="text-success">买入位</span><span>34.0 HKD</span></div>
+                    <div class="row"><span class="text-danger">卖出位</span><span>42.0 HKD</span></div>
+                    <div class="row"><span class="text-danger">止损位</span><span>28.0 HKD</span></div>
                 </div>
             </div>
 
@@ -202,13 +198,13 @@
             <div>
                 <div class="card" style="text-align: center; padding: 40px;">
                     <div class="section-title">今日建议</div>
-                    <div :class="adviceColorClass" style="font-size: 42px; font-weight: bold; margin: 20px 0;">{{ todayAdvice.action }}</div>
-                    <div class="text-gray">{{ todayAdvice.reason }}</div>
+                    <div class="text-warning" style="font-size: 42px; font-weight: bold; margin: 20px 0;">等待</div>
+                    <div class="text-gray">距离买入位34.0还差3.9%</div>
                 </div>
 
                 <div class="card" style="text-align: center;">
                     <div class="section-title">多因子评分</div>
-                    <div style="font-size: 56px; font-weight: bold; background: linear-gradient(135deg, #00d4ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ factorScores.overall }}</div>
+                    <div style="font-size: 56px; font-weight: bold; background: linear-gradient(135deg, #00d4ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">72.8</div>
                     <div class="text-gray">/100</div>
                 </div>
             </div>
@@ -219,42 +215,54 @@
                     <div class="section-title">系统状态</div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="width: 8px; height: 8px; background: #00ff88; border-radius: 50%;"></span>
-                        <span>{{ systemStatus.status }}</span>
+                        <span>正常监控中</span>
                     </div>
                 </div>
 
                 <div class="card" style="text-align: center;">
                     <div class="section-title">舆情监控</div>
-                    <div :class="sentimentColorClass" style="font-size: 42px; font-weight: bold;">{{ sentiment.score }}</div>
-                    <div :class="sentimentColorClass">{{ sentiment.level }}</div>
+                    <div class="text-danger" style="font-size: 42px; font-weight: bold;">35</div>
+                    <div class="text-danger">负面</div>
                 </div>
             </div>
         </div>
 
         <footer class="footer">
-            <div>页面 v1.2.4 (2025-02-23) | 更新时间: {{ updateTime }}</div>
+            <div>页面 v1.2.5 (2025-02-23) | 更新时间: <span id="footer-time">--</span></div>
             <div style="margin-top: 8px;">
-                <a href="#" @click.prevent="showSystemLog = true" style="color: #00d4ff; text-decoration: none; margin-right: 15px;">系统版本日志</a>
-                <a href="#" @click.prevent="showPageLog = true" style="color: #00d4ff; text-decoration: none;">页面版本日志</a>
+                <a href="#" onclick="showSystemLog(); return false;" style="color: #00d4ff; text-decoration: none; margin-right: 15px;">系统版本日志</a>
+                <a href="#" onclick="showPageLog(); return false;" style="color: #00d4ff; text-decoration: none;">页面版本日志</a>
             </div>
         </footer>
 
         <!-- 系统版本日志弹窗 -->
-        <div v-if="showSystemLog" class="modal-overlay" @click.self="showSystemLog = false">
+        <div id="system-log-modal" class="modal-overlay" style="display: none;" onclick="closeModal(event, 'system-log-modal')">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>系统版本日志</h3>
-                    <button @click="showSystemLog = false" class="modal-close">✕</button>
+                    <button onclick="document.getElementById('system-log-modal').style.display='none'" class="modal-close">✕</button>
                 </div>
                 <div class="modal-body">
-                    <div v-for="(log, index) in systemVersionLog" :key="index" class="version-item">
+                    <div class="version-item">
                         <div class="version-header">
-                            <span class="version-number">v{{ log.version }}</span>
-                            <span class="version-date">{{ log.date }}</span>
-                            <span class="version-name">{{ log.name }}</span>
+                            <span class="version-number">v3.1.0</span>
+                            <span class="version-date">2025-02-20</span>
+                            <span class="version-name">Oracle-Sentinel</span>
                         </div>
                         <ul class="version-changes">
-                            <li v-for="(change, cidx) in log.changes" :key="cidx">{{ change }}</li>
+                            <li>新增舆情监控因子(10%权重)</li>
+                            <li>优化多因子评分算法</li>
+                        </ul>
+                    </div>
+                    <div class="version-item">
+                        <div class="version-header">
+                            <span class="version-number">v3.0.0</span>
+                            <span class="version-date">2025-02-15</span>
+                            <span class="version-name">Sentinel</span>
+                        </div>
+                        <ul class="version-changes">
+                            <li>初始版本发布</li>
+                            <li>6因子评分模型</li>
                         </ul>
                     </div>
                 </div>
@@ -262,20 +270,39 @@
         </div>
 
         <!-- 页面版本日志弹窗 -->
-        <div v-if="showPageLog" class="modal-overlay" @click.self="showPageLog = false">
+        <div id="page-log-modal" class="modal-overlay" style="display: none;" onclick="closeModal(event, 'page-log-modal')">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>页面版本日志</h3>
-                    <button @click="showPageLog = false" class="modal-close">✕</button>
+                    <button onclick="document.getElementById('page-log-modal').style.display='none'" class="modal-close">✕</button>
                 </div>
                 <div class="modal-body">
-                    <div v-for="(log, index) in pageVersionLog" :key="index" class="version-item">
+                    <div class="version-item">
                         <div class="version-header">
-                            <span class="version-number">v{{ log.version }}</span>
-                            <span class="version-date">{{ log.date }}</span>
+                            <span class="version-number">v1.2.5</span>
+                            <span class="version-date">2025-02-23</span>
                         </div>
                         <ul class="version-changes">
-                            <li v-for="(change, cidx) in log.changes" :key="cidx">{{ change }}</li>
+                            <li>移除Vue，改用纯JavaScript</li>
+                            <li>修复模板渲染问题</li>
+                        </ul>
+                    </div>
+                    <div class="version-item">
+                        <div class="version-header">
+                            <span class="version-number">v1.2.4</span>
+                            <span class="version-date">2025-02-23</span>
+                        </div>
+                        <ul class="version-changes">
+                            <li>添加缓存控制头</li>
+                        </ul>
+                    </div>
+                    <div class="version-item">
+                        <div class="version-header">
+                            <span class="version-number">v1.2.0</span>
+                            <span class="version-date">2025-02-23</span>
+                        </div>
+                        <ul class="version-changes">
+                            <li>恢复响应式布局</li>
                         </ul>
                     </div>
                 </div>
@@ -284,113 +311,49 @@
     </div>
 
     <script>
-        const { createApp, ref, computed } = Vue;
+        // 更新日期
+        function updateDate() {
+            const date = new Date().toLocaleDateString('zh-CN', {
+                year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+            });
+            document.getElementById('current-date').textContent = date;
+        }
 
-        createApp({
-            setup() {
-                // 状态
-                const showSystemLog = ref(false);
-                const showPageLog = ref(false);
-                const updateTime = ref('');
+        // 更新时间
+        function updateTime() {
+            const time = new Date().toLocaleTimeString('zh-CN');
+            document.getElementById('update-time-1').textContent = '更新于: ' + time;
+            document.getElementById('update-time-2').textContent = '更新于: ' + time;
+            document.getElementById('footer-time').textContent = time;
+        }
 
-                // 数据 - 使用简单对象避免响应式问题
-                const currentPrice = ref({
-                    price: '35.36',
-                    change: '-1.30',
-                    changePercent: '-3.55'
-                });
+        // 刷新数据
+        function refreshData() {
+            updateTime();
+            console.log('数据已刷新');
+        }
 
-                const position = ref({
-                    shares: 1600,
-                    avgCost: '35.90',
-                    profit: '-864'
-                });
+        // 显示系统日志
+        function showSystemLog() {
+            document.getElementById('system-log-modal').style.display = 'flex';
+        }
 
-                const keyLevels = ref({
-                    buy: '34.0',
-                    sell: '42.0',
-                    stopLoss: '28.0'
-                });
+        // 显示页面日志
+        function showPageLog() {
+            document.getElementById('page-log-modal').style.display = 'flex';
+        }
 
-                const todayAdvice = ref({
-                    action: '等待',
-                    reason: '距离买入位34.0还差3.9%'
-                });
-
-                const factorScores = ref({
-                    overall: '72.8'
-                });
-
-                const systemStatus = ref({
-                    status: '正常监控中'
-                });
-
-                const sentiment = ref({
-                    score: '35',
-                    level: '负面'
-                });
-
-                const systemVersionLog = ref([
-                    { version: '3.1.0', date: '2025-02-20', name: 'Oracle-Sentinel', changes: ['新增舆情监控因子(10%权重)', '优化多因子评分算法'] },
-                    { version: '3.0.0', date: '2025-02-15', name: 'Sentinel', changes: ['初始版本发布', '6因子评分模型'] }
-                ]);
-
-                const pageVersionLog = ref([
-                    { version: '1.2.3', date: '2025-02-23', changes: ['修复Vue渲染问题', '简化数据结构'] },
-                    { version: '1.2.2', date: '2025-02-23', changes: ['添加版本日志弹窗'] },
-                    { version: '1.2.0', date: '2025-02-23', changes: ['恢复响应式布局'] },
-                    { version: '1.0.0', date: '2025-02-22', changes: ['初始版本'] }
-                ]);
-
-                // 计算属性
-                const currentDate = computed(() => {
-                    return new Date().toLocaleDateString('zh-CN', {
-                        year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
-                    });
-                });
-
-                const adviceColorClass = computed(() => {
-                    const action = todayAdvice.value.action;
-                    if (action === '买入') return 'text-success';
-                    if (action === '卖出') return 'text-danger';
-                    return 'text-warning';
-                });
-
-                const sentimentColorClass = computed(() => {
-                    const score = parseInt(sentiment.value.score);
-                    if (score >= 70) return 'text-success';
-                    if (score >= 40) return 'text-warning';
-                    return 'text-danger';
-                });
-
-                // 方法
-                const refreshData = () => {
-                    updateTime.value = new Date().toLocaleTimeString('zh-CN');
-                };
-
-                // 初始化
-                updateTime.value = new Date().toLocaleTimeString('zh-CN');
-
-                return {
-                    showSystemLog,
-                    showPageLog,
-                    updateTime,
-                    currentPrice,
-                    position,
-                    keyLevels,
-                    todayAdvice,
-                    factorScores,
-                    systemStatus,
-                    sentiment,
-                    systemVersionLog,
-                    pageVersionLog,
-                    currentDate,
-                    adviceColorClass,
-                    sentimentColorClass,
-                    refreshData
-                };
+        // 关闭弹窗
+        function closeModal(event, modalId) {
+            if (event.target.id === modalId) {
+                document.getElementById(modalId).style.display = 'none';
             }
-        }).mount('#app');
+        }
+
+        // 初始化
+        updateDate();
+        updateTime();
+        setInterval(updateTime, 60000); // 每分钟更新
     </script>
 </body>
 </html>
