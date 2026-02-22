@@ -443,95 +443,80 @@
     </div>
 
     <script>
-        const { createApp, ref, computed } = Vue;
+        const { createApp, ref, computed, onMounted } = Vue;
 
         createApp({
             setup() {
-                const loading = ref(false);
+                const loading = ref(true);
                 const showFactorDetail = ref(false);
                 const showSentimentDetail = ref(false);
                 const showUpdateLog = ref(false);
                 const showSystemDoc = ref(false);
                 const currentFundTab = ref('today');
-
+                
+                // API 配置
+                const API_BASE = 'https://xiaomi-watch-pro-api.joyseekerr.workers.dev';
+                
                 // 当前日期时间
                 const now = new Date();
                 const currentDate = ref(now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }));
                 const currentTime = ref(now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }));
                 const lastUpdateDate = ref('2026-02-23');
-
-                // 更新时间戳（使用动态生成的当前时间）
-                const getCurrentTimeStr = () => {
-                    const now = new Date();
-                    return now.toLocaleString('zh-CN', { 
-                        year: 'numeric', 
-                        month: '2-digit', 
-                        day: '2-digit', 
-                        hour: '2-digit', 
-                        minute: '2-digit',
-                        second: '2-digit',
-                        hour12: false 
-                    }).replace(/\//g, '-');
+                
+                // 数据状态
+                const currentPrice = ref({});
+                const position = ref({});
+                const keyLevels = ref({});
+                const todayAdvice = ref({});
+                const factorScores = ref({ overall: 0, factors: {} });
+                const fundFlowData = ref({ today: {}, '5d': {}, '10d': {}, '20d': {} });
+                const systemStatus = ref({});
+                const sentiment = ref({ stats: {} });
+                const news = ref([]);
+                const updateTimes = ref({});
+                
+                // 获取实时数据
+                const fetchData = async () => {
+                    try {
+                        loading.value = true;
+                        const response = await fetch(`${API_BASE}/api/dashboard`);
+                        const data = await response.json();
+                        
+                        // 更新各个数据项
+                        currentPrice.value = data.price || {};
+                        position.value = data.position || {};
+                        keyLevels.value = data.keyLevels || {};
+                        todayAdvice.value = data.advice || {};
+                        factorScores.value = data.factorScores || { overall: 0, factors: {} };
+                        fundFlowData.value = { today: data.fundFlow || {} };
+                        systemStatus.value = data.systemStatus || {};
+                        sentiment.value = data.sentiment || { stats: {} };
+                        news.value = data.news?.news || [];
+                        
+                        // 更新时间戳
+                        const now = new Date().toLocaleString('zh-CN', { 
+                            year: 'numeric', month: '2-digit', day: '2-digit', 
+                            hour: '2-digit', minute: '2-digit', second: '2-digit',
+                            hour12: false 
+                        }).replace(/\//g, '-');
+                        
+                        updateTimes.value = {
+                            price: now, position: now, keyLevels: now, advice: now,
+                            factor: now, fundFlow: now, system: now, sentiment: now, news: now
+                        };
+                        
+                        loading.value = false;
+                    } catch (error) {
+                        console.error('获取数据失败:', error);
+                        loading.value = false;
+                    }
                 };
                 
-                const currentTimeStr = getCurrentTimeStr();
-                
-                const updateTimes = ref({
-                    price: currentTimeStr,
-                    position: currentTimeStr,
-                    keyLevels: currentTimeStr,
-                    advice: currentTimeStr,
-                    factor: currentTimeStr,
-                    fundFlow: currentTimeStr,
-                    system: currentTimeStr,
-                    sentiment: currentTimeStr,
-                    news: currentTimeStr
-                });
-
-                // 当前价格
-                const currentPrice = ref({
-                    price: 35.36,
-                    change: -1.30,
-                    changePercent: -3.55,
-                    high: 36.86,
-                    low: 35.32,
-                    open: 36.66,
-                    prevClose: 36.66
-                });
-
-                // 持仓数据（已修正为1600股）
-                const position = ref({
-                    shares: 1600,
-                    avgCost: 35.90,
-                    marketValue: 56576,
-                    profit: -864,
-                    profitPercent: -1.51,
-                    isProfit: false
-                });
-
-                // 关键价位
-                const keyLevels = ref({
-                    buy: 34.0,
-                    sell: 42.0,
-                    stopLoss: 28.0
-                });
-
-                // 今日建议
-                const todayAdvice = ref({
-                    action: '等待',
-                    reason: '距离买入位34.0还差3.9%',
-                    detailReason: '当前价格35.36，建议等待回调至34.0附近再考虑建仓'
-                });
-
-                // 6因子评分（完整）
-                const factorScores = ref({
-                    overall: 72.8,
-                    price: 75,
-                    news: 68,
-                    fundFlow: 45,
-                    sentiment: 58,
-                    technical: 65,
-                    market: 70
+                // 页面加载时获取数据
+                onMounted(() => {
+                    fetchData();
+                    // 每5分钟刷新一次
+                    setInterval(fetchData, 300000);
                 });
 
                 // 资金流向标签
@@ -540,71 +525,6 @@
                     { label: '近5日', value: '5d' },
                     { label: '近10日', value: '10d' },
                     { label: '近20日', value: '20d' }
-                ]);
-
-                // 不同时间维度的资金流向数据
-                const fundFlowData = ref({
-                    today: { mainInflow: -2.35, retailInflow: 0.85, northbound: -1.20 },
-                    '5d': { mainInflow: -8.50, retailInflow: 3.20, northbound: -4.50 },
-                    '10d': { mainInflow: -15.20, retailInflow: 6.80, northbound: -8.30 },
-                    '20d': { mainInflow: -28.50, retailInflow: 12.50, northbound: -15.60 }
-                });
-
-                // 系统状态
-                const systemStatus = ref({
-                    status: '正常监控中',
-                    nextUpdate: '2分钟后'
-                });
-
-                // 舆情监控（详细）
-                const sentiment = ref({
-                    score: 35,
-                    level: '负面',
-                    positive: 12,
-                    neutral: 28,
-                    negative: 45,
-                    reason: '近期高管言论偏谨慎，社交媒体负面情绪较多，机构评级下调',
-                    events: [
-                        { title: '雷军表示2025年是最艰难的一年', impact: -15, time: '3天前' },
-                        { title: '小米SU7销量不及预期传闻', impact: -10, time: '5天前' },
-                        { title: '多家机构下调目标价', impact: -8, time: '1周前' }
-                    ]
-                });
-
-                // 新闻（带链接）
-                const news = ref([
-                    { 
-                        title: '小米集团2月20日回购428万股，涉资1.52亿港元', 
-                        url: 'https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-02-20/doc-inefukaq9026549.shtml',
-                        source: '新浪财经', 
-                        time: '2天前', 
-                        sentiment: 'positive',
-                        sentimentText: '正面'
-                    },
-                    { 
-                        title: '小米SU7销量超预期，3月产能将提升', 
-                        url: 'https://www.cls.cn/detail/1926440',
-                        source: '财联社', 
-                        time: '3天前', 
-                        sentiment: 'positive',
-                        sentimentText: '正面'
-                    },
-                    { 
-                        title: '雷军：2025年是小米汽车关键之年', 
-                        url: 'https://www.wallstreetcn.com/articles/1234567',
-                        source: '华尔街见闻', 
-                        time: '5天前', 
-                        sentiment: 'neutral',
-                        sentimentText: '中性'
-                    },
-                    { 
-                        title: '摩根大通下调小米目标价至38港元', 
-                        url: 'https://finance.sina.com.cn/stock/hkstock/ggscyd/2025-02-18/doc-inefukaq9026548.shtml',
-                        source: '新浪财经', 
-                        time: '1周前', 
-                        sentiment: 'negative',
-                        sentimentText: '负面'
-                    }
                 ]);
 
                 // 计算属性
@@ -684,7 +604,8 @@
                     sentimentScoreClass,
                     marketStatus,
                     getScoreClass,
-                    getSentimentClass
+                    getSentimentClass,
+                    fetchData
                 };
             }
         }).mount('#app');
