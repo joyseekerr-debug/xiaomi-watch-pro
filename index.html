@@ -379,11 +379,11 @@
             </footer>
             
             <!-- 更新日志弹窗 -->
-            <div v-if="showUpdateLog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showUpdateLog = false">
-                <div class="glass-card max-w-md w-full mx-4 max-h-96 overflow-y-auto">
+            <div v-if="showUpdateLog" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" style="display: flex;" @click.self="showUpdateLog = false">
+                <div class="glass-card max-w-md w-full mx-4 max-h-96 overflow-y-auto" style="position: relative; z-index: 51;">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-bold">更新日志</h3>
-                        <button @click="showUpdateLog = false" class="text-gray-400 hover:text-white">✕</button>
+                        <button @click="showUpdateLog = false" class="text-gray-400 hover:text-white text-xl" style="cursor: pointer; padding: 5px;">✕</button>
                     </div>
                     <div class="space-y-3 text-sm">
                         <div class="border-l-2 border-accent pl-3">
@@ -407,11 +407,11 @@
             </div>
             
             <!-- 系统文档弹窗 -->
-            <div v-if="showSystemDoc" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showSystemDoc = false">
-                <div class="glass-card max-w-md w-full mx-4 max-h-96 overflow-y-auto">
+            <div v-if="showSystemDoc" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" style="display: flex;" @click.self="showSystemDoc = false">
+                <div class="glass-card max-w-md w-full mx-4 max-h-96 overflow-y-auto" style="position: relative; z-index: 51;">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-bold">系统文档</h3>
-                        <button @click="showSystemDoc = false" class="text-gray-400 hover:text-white">✕</button>
+                        <button @click="showSystemDoc = false" class="text-gray-400 hover:text-white text-xl" style="cursor: pointer; padding: 5px;">✕</button>
                     </div>
                     <div class="space-y-3 text-sm text-gray-300">
                         <p><strong class="text-accent">XiaomiWatch Pro</strong> 是专为小米集团(01810.HK)股票监控设计的智能仪表盘。</p>
