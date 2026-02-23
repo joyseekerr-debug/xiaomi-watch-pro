@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小米股票监控 - 测试版</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body { background: #1a1a2e; color: #fff; font-family: sans-serif; padding: 20px; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin: 10px 0; }
+        .price { font-size: 48px; font-weight: bold; color: #00d4ff; }
+        .error { color: #ff4757; }
+        .success { color: #00ff88; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div v-if="loading">加载中...{{dots}}</div>
+        
+        <div v-else-if="error" class="error">
+            <div>加载失败: {{error}}</div>
+            <button @click="loadData" style="margin-top:10px;padding:10px 20px;">重试</button>
+        </div>
+        
+        <div v-else>
+            <div class="card">
+                <div>小米集团-W (1810.HK)</div>
+                <div class="price">{{data.price?.price || '--'}}</div>
+                <div :class="data.price?.change >= 0 ? 'success' : 'error'">
+                    {{data.price?.change > 0 ? '+' : ''}}{{data.price?.change}} ({{data.price?.changePercent}}%)
+                </div>
+            </div>
+            
+            <div class="card">
+                <div>持仓: {{data.position?.shares}}股 | 盈亏: {{data.position?.profit}}元</div>
+            </div>
+            
+            <div class="card">
+                <div>建议: {{data.advice?.action}}</div>
+                <div>评分: {{data.factorScores?.overall}}</div>
+            </div>
+            
+            <div style="margin-top:20px;color:#666;font-size:12px;">
+                数据源: {{dataSource}} | 
+                <button @click="loadData" style="padding:5px 10px;">刷新</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+        
+        createApp({
+            setup() {
+                const loading = ref(true);
+                const error = ref(null);
+                const data = ref({});
+                const dataSource = ref('');
+                const dots = ref('');
+                
+                // 加载动画
+                const loadingAnim = setInterval(() => {
+                    dots.value = dots.value.length >= 3 ? '' : dots.value + '.';
+                }, 500);
+                
+                const loadData = async () => {
+                    loading.value = true;
+                    error.value = null;
+                    
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+                        
+                        const response = await fetch('https://xiaomi-watch-pro-api.joyseekerr.workers.dev/api/dashboard', {
+                            signal: controller.signal
+                        });
+                        
+                        clearTimeout(timeoutId);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        
+                        const result = await response.json();
+                        
+                        if (result.error) {
+                            throw new Error(result.message);
+                        }
+                        
+                        data.value = result;
+                        dataSource.value = 'API';
+                        loading.value = false;
+                        clearInterval(loadingAnim);
+                        
+                    } catch (e) {
+                        console.error('加载失败:', e);
+                        error.value = e.message || '网络错误';
+                        loading.value = false;
+                        clearInterval(loadingAnim);
+                        
+                        // 使用默认数据
+                        data.value = {
+                            price: { price: 35.36, change: -1.30, changePercent: -3.55 },
+                            position: { shares: 1600, profit: -864 },
+                            advice: { action: '等待' },
+                            factorScores: { overall: 72.8 }
+                        };
+                        dataSource.value = '默认数据';
+                    }
+                };
+                
+                onMounted(() => {
+                    loadData();
+                });
+                
+                return { loading, error, data, dataSource, dots, loadData };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

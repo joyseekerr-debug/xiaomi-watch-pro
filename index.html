@@ -379,15 +379,21 @@
             
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 增加到30秒
                 
-                const response = await fetch(`${API_BASE}/api/dashboard`, {
-                    signal: controller.signal
+                // 添加时间戳防止缓存
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${API_BASE}/api/dashboard?t=${timestamp}`, {
+                    signal: controller.signal,
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
                 });
                 
                 clearTimeout(timeoutId);
                 
-                if (!response.ok) throw new Error('API Error');
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
                 
                 const data = await response.json();
                 
@@ -395,12 +401,16 @@
                 
                 renderData(data);
                 dataSource.textContent = 'API实时';
+                errorBanner.classList.remove('show');
                 
             } catch (error) {
                 console.error('API加载失败:', error);
-                renderData(defaultData);
+                // 不显示默认数据，而是显示错误状态
+                document.getElementById('price-display').textContent = '--';
+                document.getElementById('change-display').textContent = '数据加载失败';
+                document.getElementById('change-display').className = 'text-gray';
                 errorBanner.classList.add('show');
-                dataSource.textContent = '缓存数据';
+                dataSource.textContent = '连接失败';
             } finally {
                 loading.classList.add('hidden');
                 refreshBtn.disabled = false;

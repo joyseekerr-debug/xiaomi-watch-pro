@@ -132,12 +132,35 @@ function getDefaultData() {
   };
 }
 
-// 从 KV 读取数据
+// 从 KV 读取数据（读取多个key并合并）
 async function getDataFromKV() {
   try {
-    const data = await XIAOMI_WATCH_DATA.get('dashboard_data', { type: 'json' });
-    if (data) {
-      return data;
+    // 读取各个独立的key
+    const [price, position, keyLevels, advice, factorScores, fundFlow, sentiment, news, system] = await Promise.all([
+      XIAOMI_WATCH_DATA.get('price', { type: 'json' }),
+      XIAOMI_WATCH_DATA.get('position', { type: 'json' }),
+      XIAOMI_WATCH_DATA.get('keyLevels', { type: 'json' }),
+      XIAOMI_WATCH_DATA.get('advice', { type: 'json' }),
+      XIAOMI_WATCH_DATA.get('factorScores', { type: 'json' }),
+      XIAOMI_WATCH_DATA.get('fundFlow', { type: 'json' }),
+      XIAOMI_WATCH_DATA.get('sentiment', { type: 'json' }),
+      XIAOMI_WATCH_DATA.get('news', { type: 'json' }),
+      XIAOMI_WATCH_DATA.get('system', { type: 'json' })
+    ]);
+    
+    // 如果price数据存在，说明同步正常
+    if (price) {
+      return {
+        price,
+        position,
+        keyLevels,
+        advice,
+        factorScores,
+        fundFlow,
+        sentiment,
+        news,
+        systemStatus: system
+      };
     }
   } catch (e) {
     console.error('KV read error:', e);
